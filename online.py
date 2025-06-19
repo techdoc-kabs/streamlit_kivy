@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime
 import requests
 import pandas as pd
-
+API_URL = "https://streamlit-kivy.onrender.com/patients" 
 
 # --- DB Setup ---
 conn = sqlite3.connect('patients.db', check_same_thread=False)
@@ -67,7 +67,6 @@ if st.checkbox("📄 Show Registered Patients"):
     )
 
 
-API_URL = "https://streamlit-kivy.onrender.com/patients"  # ✅ Correct endpoint
 
 st.title("🧾 Synced Patients from Central API")
 try:
