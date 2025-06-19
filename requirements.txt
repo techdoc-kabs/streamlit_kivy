@@ -2,4 +2,4 @@ streamlit==1.38.0
 fastapi
 uvicorn
 pydantic
-sqlite3
+
