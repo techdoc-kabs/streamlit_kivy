@@ -49,7 +49,7 @@ if st.checkbox("📄 Show Registered Patients"):
     )
 
 
-API_URL = "http://127.0.0.1:8000/patients"  
+API_URL = "https://streamlit-kivy.onrender.com"  
 
 st.title("Synced Patients")
 try:
