@@ -49,16 +49,19 @@ if st.checkbox("📄 Show Registered Patients"):
     )
 
 
-API_URL = "https://streamlit-kivy.onrender.com"  
+API_URL = "https://streamlit-kivy.onrender.com/patients"  # ✅ Correct endpoint
 
-st.title("Synced Patients")
+st.title("🧾 Synced Patients from Central API")
 try:
     response = requests.get(API_URL)
     if response.status_code == 200:
         data = response.json()
-        df = pd.DataFrame(data)
-        st.dataframe(df)
+        if data:
+            df = pd.DataFrame(data)
+            st.dataframe(df)
+        else:
+            st.info("No patients found on the central API.")
     else:
-        st.error("Failed to fetch patients")
+        st.error(f"Failed to fetch patients: {response.status_code}")
 except Exception as e:
     st.error(f"Error: {str(e)}")
