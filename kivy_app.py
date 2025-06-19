@@ -81,7 +81,7 @@ import sqlite3
 from datetime import datetime
 import requests
 
-API_URL = "http://127.0.0.1:8000/patients"  # your FastAPI URL
+API_URL = "https://streamlit-kivy.onrender.com"  # your FastAPI URL
 DB = "offline_patients.db"
 
 # Setup local DB
