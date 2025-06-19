@@ -30,15 +30,33 @@ with st.form("registration_form"):
     gender = st.selectbox("Gender", ["Male", "Female", "Other"])
     submitted = st.form_submit_button("Register")
 
-    if submitted:
+   if submitted:
         if name and age:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Save locally
             c.execute("INSERT INTO patients (name, age, gender, date) VALUES (?, ?, ?, ?)",
                       (name, age, gender, now))
             conn.commit()
-            st.success("✅ Patient registered successfully!")
+    
+            # Also sync to FastAPI
+            payload = {
+                "name": name,
+                "age": age,
+                "gender": gender,
+                "date": now
+            }
+            try:
+                response = requests.post(API_URL, json=payload)
+                if response.status_code == 200:
+                    st.success("✅ Registered and synced to server!")
+                else:
+                    st.warning(f"Registered locally but failed to sync. Status code: {response.status_code}")
+            except Exception as e:
+                st.warning(f"Registered locally but sync failed: {str(e)}")
         else:
             st.error("Please fill in all fields.")
+
 
 # --- Display Records ---
 if st.checkbox("📄 Show Registered Patients"):
