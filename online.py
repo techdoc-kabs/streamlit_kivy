@@ -30,7 +30,7 @@ with st.form("registration_form"):
     gender = st.selectbox("Gender", ["Male", "Female", "Other"])
     submitted = st.form_submit_button("Register")
 
-   if submitted:
+    if submitted:
         if name and age:
             now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
