@@ -1,14 +1,14 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Sequential Horizontal Story")
-st.write("Items flow horizontally, appear one by one, then disappear together.")
+st.title("Sequential Flowing Story - Auto Size")
+st.write("Each item adapts its size to content, appears sequentially, then disappears together.")
 
 components.html("""
 <style>
 #story-container {
     display: flex;
-    flex-wrap: wrap;  /* allows items to flow to next line */
+    flex-wrap: wrap;  /* allow items to flow to next line */
     justify-content: center; /* center horizontally */
     gap: 20px; /* spacing between items */
     margin-top: 50px;
@@ -21,9 +21,10 @@ components.html("""
     font-size: 16px;
     opacity: 0;
     transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-    max-width: 150px;
     text-align: center;
     cursor: pointer;
+    display: inline-block;  /* shrink to fit content */
+    max-width: 250px;       /* max width for long text/images */
 }
 .floating-story.show {
     opacity: 1;
@@ -31,7 +32,9 @@ components.html("""
 }
 .floating-story img {
     max-width: 100%;
+    height: auto;           /* maintain image aspect ratio */
     border-radius: 8px;
+    display: block;
 }
 </style>
 
