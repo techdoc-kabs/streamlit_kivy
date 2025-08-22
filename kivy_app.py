@@ -102,6 +102,7 @@ st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Student Sco
 AgGrid(df, fit_columns_on_grid_load=True)
 
 # ---- Responsive image ----
-img = Image.open("Paul.jpg")  # Make sure Paul.jpg is in the same folder as this script
+img = Image.open("paul.jpg")  # Make sure Paul.jpg is in the same folder as this script
 st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Example Image:</p>", unsafe_allow_html=True)
 st.image(img, use_column_width=True)
+
