@@ -68,7 +68,7 @@ if st.button("Next"):
     responses[q["key"]] = answer
     current_step += 1
     st.session_state["step"] = current_step
-    st.experimental_rerun()
+    st.rerun()
 
 # Show results if last step reached
 if current_step >= len(questions):
@@ -91,3 +91,4 @@ if current_step >= len(questions):
         st.warning("Some areas may need attention. Consider stress management strategies.")
     else:
         st.error("High risk detected. Please seek professional support immediately.")
+
