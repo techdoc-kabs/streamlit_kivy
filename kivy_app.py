@@ -102,7 +102,8 @@ AgGrid(df, fit_columns_on_grid_load=True)
 
 # ---- Responsive image ----
 # Replace these with images suitable for light/dark themes
-img_path = "example_dark.jpg" if theme == "dark" else "example_light.jpg"
+img_path = "paul.jpg" if theme == "dark" else "paul.jpg"
 img = Image.open(img_path)
 st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Example Image:</p>", unsafe_allow_html=True)
 st.image(img, use_column_width=True)
+
