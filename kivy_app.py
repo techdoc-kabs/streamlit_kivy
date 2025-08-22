@@ -1,108 +1,90 @@
 import streamlit as st
-from st_aggrid import AgGrid
-from streamlit_option_menu import option_menu
-from streamlit_javascript import st_javascript
+from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
-from PIL import Image
+from streamlit_option_menu import option_menu
+import base64
 
-# ---- Detect screen width ----
-screen_width = st_javascript("window.innerWidth") or 800
+# ------------------ Detect Dark/Light Mode ------------------
+def get_theme():
+    return st.session_state.get("theme", "light")
 
-# ---- Safe theme detection ----
-theme = "light"  # default
-try:
-    if hasattr(st.runtime.scriptrunner.app, "theme") and st.runtime.scriptrunner.app.theme is not None:
-        theme = st.runtime.scriptrunner.app.theme._current_theme.name.lower()  # "light" or "dark"
-except Exception:
-    theme = "light"
-
-# ---- Adaptive colors based on theme ----
-if theme == "dark":
-    background_color = "#0e1117"
-    text_color = "#FFFFFF"
-    table_header_color = "#1f1f1f"
-    menu_selected_bg = "#1f1f1f"
-else:
-    background_color = "#FFFFFF"
-    text_color = "#000000"
-    table_header_color = "#f0f0f0"
-    menu_selected_bg = "#0d6efd"
-
-# ---- Adaptive font size ----
-if screen_width < 600:
-    font_size = 14
-elif screen_width < 900:
-    font_size = 18
-else:
-    font_size = 24
-
-# ---- Inject CSS for theme and sidebar ----
-st.markdown(f"""
-<style>
-body {{
-    background-color: {background_color};
-    color: {text_color};
-}}
-.css-1d391kg {{
-    min-width: 250px !important;
-}}
-@media screen and (max-width: 600px){{
-    .css-1d391kg {{min-width: 200px !important;}}
-}}
-.sidebar-text {{
-    font-size: {font_size}px;
-}}
-.ag-header-cell-label {{
-    background-color: {table_header_color} !important;
-    color: {text_color} !important;
-}}
-</style>
+# JS to detect system theme
+st.markdown("""
+    <script>
+    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
+    window.parent.postMessage({theme: theme}, "*");
+    </script>
 """, unsafe_allow_html=True)
 
-# ---- Sidebar toggle button ----
-menu_clicked = st.button("☰ Menu")
-if menu_clicked:
-    st_javascript("""
-        const sidebar = window.parent.document.querySelector('div[data-testid="stSidebar"]');
-        if (sidebar) sidebar.style.display = (sidebar.style.display === 'none') ? 'block' : 'none';
-    """)
+# ------------------ Sidebar Toggle Button ------------------
+menu_btn = st.button("☰ Menu", key="menu_btn")
+if menu_btn:
+    st.session_state["sidebar_open"] = not st.session_state.get("sidebar_open", True)
 
-# ---- Sidebar content ----
-if screen_width < 600:
-    st.selectbox("Choose option", ["Option 1", "Option 2", "Option 3"])
-else:
-    st.sidebar.selectbox("Choose option", ["Option 1", "Option 2", "Option 3"])
-st.sidebar.slider("Select value", 0, 100)
+if st.session_state.get("sidebar_open", True):
+    with st.sidebar:
+        st.markdown("### Sidebar Menu")
+        st.markdown("Adaptive font sizes & dark mode support")
 
-# ---- Responsive option menu ----
-orientation = "vertical" if screen_width < 600 else "horizontal"
-menu_styles = {
-    "container": {"width": "100%"},
-    "nav-link": {"font-size": f"{font_size}px", "text-align": "center", "color": text_color},
-    "nav-link-selected": {"background-color": menu_selected_bg}
-}
+# ------------------ Option Menu ------------------
 selected = option_menu(
     menu_title=None,
-    options=["Home", "Settings", "Profile"],
-    icons=["house", "gear", "person"],
-    menu_icon="cast",
-    default_index=0,
-    orientation=orientation,
-    styles=menu_styles
+    options=["Home", "Dashboard", "Reports", "Settings", "Help"],
+    icons=["house", "bar-chart", "file-text", "gear", "question-circle"],
+    orientation="horizontal",
 )
-st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>You selected: {selected}</p>", unsafe_allow_html=True)
 
-# ---- Responsive table ----
-df = pd.DataFrame({
-    "Name": ["Alice", "Bob", "Charlie", "David"],
-    "Score": [95, 87, 78, 92],
-    "Remarks": ["Excellent", "Good", "Average", "Very Good"]
-})
-st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Student Scores:</p>", unsafe_allow_html=True)
-AgGrid(df, fit_columns_on_grid_load=True)
+# ------------------ Adaptive Layout ------------------
+theme = get_theme()
+bg_color = "#1E1E1E" if theme == "dark" else "#FFFFFF"
+font_color = "#FFFFFF" if theme == "dark" else "#000000"
 
-# ---- Responsive image ----
-img = Image.open("paul.jpg")  # Make sure Paul.jpg is in the same folder as this script
-st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Example Image:</p>", unsafe_allow_html=True)
-st.image(img, use_column_width=True)
+st.markdown(
+    f"""
+    <style>
+    .main-container {{
+        background-color: {bg_color};
+        color: {font_color};
+        transition: all 0.3s ease;
+    }}
+    .stApp {{
+        background-color: {bg_color};
+    }}
+    .stButton > button {{
+        color: {font_color};
+    }}
+    .nav-link {{
+        color: {font_color} !important;
+    }}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
+# ------------------ Image ------------------
+st.image("paul.jpg", use_column_width=True)
+
+# ------------------ DataFrame with AgGrid ------------------
+data = {
+    "Name": ["Paul", "John", "Mary", "Anna", "James"],
+    "Age": [25, 30, 22, 28, 35],
+    "City": ["Kampala", "Gulu", "Mbarara", "Entebbe", "Jinja"],
+    "Score": [85, 90, 78, 92, 88],
+    "Grade": ["B", "A", "C", "A", "B"]
+}
+df = pd.DataFrame(data)
+
+gb = GridOptionsBuilder.from_dataframe(df)
+gb.configure_pagination(paginationAutoPageSize=True)
+gb.configure_side_bar()
+gb.configure_default_column(resizable=True, wrapText=True, autoHeight=True)
+gridOptions = gb.build()
+
+AgGrid(df, gridOptions=gridOptions, height=300, theme="dark" if theme == "dark" else "light")
+
+# ------------------ Columns Test ------------------
+st.markdown("### 5-Column Layout Test")
+cols = st.columns(5)
+for i, col in enumerate(cols):
+    col.markdown(f"**Column {i+1}**")
+    col.write("Content adapts to screen size")
