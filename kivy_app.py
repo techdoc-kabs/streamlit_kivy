@@ -8,10 +8,15 @@ from PIL import Image
 # ---- Detect screen width ----
 screen_width = st_javascript("window.innerWidth") or 800
 
-# ---- Detect current theme (light/dark) ----
-theme = st.get_option("theme") or "light"
+# ---- Safe theme detection ----
+theme = "light"  # default
+try:
+    if hasattr(st.runtime.scriptrunner.app, "theme") and st.runtime.scriptrunner.app.theme is not None:
+        theme = st.runtime.scriptrunner.app.theme._current_theme.name.lower()  # "light" or "dark"
+except Exception:
+    theme = "light"
 
-# ---- Set adaptive colors based on theme ----
+# ---- Adaptive colors based on theme ----
 if theme == "dark":
     background_color = "#0e1117"
     text_color = "#FFFFFF"
@@ -34,23 +39,19 @@ else:
 # ---- Inject CSS for theme and sidebar ----
 st.markdown(f"""
 <style>
-/* Body background and text */
 body {{
     background-color: {background_color};
     color: {text_color};
 }}
-/* Force sidebar width */
 .css-1d391kg {{
     min-width: 250px !important;
 }}
 @media screen and (max-width: 600px){{
     .css-1d391kg {{min-width: 200px !important;}}
 }}
-/* Sidebar font */
 .sidebar-text {{
     font-size: {font_size}px;
 }}
-/* Table header */
 .ag-header-cell-label {{
     background-color: {table_header_color} !important;
     color: {text_color} !important;
@@ -58,7 +59,7 @@ body {{
 </style>
 """, unsafe_allow_html=True)
 
-# ---- Sidebar toggle button (hamburger) ----
+# ---- Sidebar toggle button ----
 menu_clicked = st.button("☰ Menu")
 if menu_clicked:
     st_javascript("""
@@ -101,9 +102,6 @@ st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Student Sco
 AgGrid(df, fit_columns_on_grid_load=True)
 
 # ---- Responsive image ----
-# Replace these with images suitable for light/dark themes
-img_path = "paul.jpg" if theme == "dark" else "paul.jpg"
-img = Image.open(img_path)
+img = Image.open("Paul.jpg")  # Make sure Paul.jpg is in the same folder as this script
 st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Example Image:</p>", unsafe_allow_html=True)
 st.image(img, use_column_width=True)
-
