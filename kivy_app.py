@@ -1,41 +1,39 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Floating Full-Story Carousel")
-st.write("Displays the full story sequence at once, then disappears, then repeats.")
+st.title("Sequential Items in Separate Divs")
+st.write("Each item appears in its own floating box, then all disappear together.")
 
 components.html("""
 <style>
-#story-notice {
+.floating-story {
     position: fixed;
     bottom: 20px;
     right: 20px;
     background-color: #ff6600;
     color: white;
-    padding: 15px 20px;
+    padding: 10px 15px;
     border-radius: 12px;
     font-size: 16px;
     z-index: 9999;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     opacity: 0;
-    transform: translateX(100%);
     transition: all 0.5s ease-in-out;
-    max-width: 250px;
+    max-width: 200px;
     text-align: center;
     cursor: pointer;
+    margin-top: 5px;
 }
-#story-notice.show {
+.floating-story.show {
     opacity: 1;
-    transform: translateX(0);
 }
-#story-notice img {
+.floating-story img {
     max-width: 100%;
     border-radius: 8px;
-    margin-top: 5px;
 }
 </style>
 
-<div id="story-notice" onclick="window.open('https://example.com','_blank')"></div>
+<div id="story-container"></div>
 
 <script>
 const storyContent = [
@@ -45,26 +43,41 @@ const storyContent = [
     {type: 'text', content: '🌞 Enjoy your day!'}
 ];
 
-function showFullStory() {
-    const notice = document.getElementById('story-notice');
-    // Build full HTML
-    let html = '';
-    for (let i=0; i<storyContent.length; i++){
-        if(storyContent[i].type === 'text'){
-            html += '<div>' + storyContent[i].content + '</div>';
-        } else if(storyContent[i].type === 'image'){
-            html += '<img src="' + storyContent[i].content + '">';
-        }
-    }
-    notice.innerHTML = html;
-    notice.classList.add('show');  // show full story
+const durationPerItem = 1000; // 1 sec per item
+const pauseAfterAll = 2000;   // 2 sec after all appear
 
-    // Hide after story duration
-    setTimeout(() => notice.classList.remove('show'), 3000 * storyContent.length);
+function showStorySeparate(){
+    const container = document.getElementById('story-container');
+    container.innerHTML = '';
+
+    const divs = [];
+
+    // create divs for each item
+    storyContent.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'floating-story';
+        if(item.type === 'text'){
+            div.innerHTML = item.content;
+        } else if(item.type === 'image'){
+            div.innerHTML = `<img src="${item.content}">`;
+        }
+        div.onclick = () => window.open('https://example.com','_blank');
+        container.appendChild(div);
+        divs.push(div);
+    });
+
+    // sequentially show items
+    divs.forEach((div, i) => {
+        setTimeout(() => div.classList.add('show'), i * durationPerItem);
+    });
+
+    // hide all at once
+    setTimeout(() => divs.forEach(div => div.classList.remove('show')), divs.length * durationPerItem + pauseAfterAll);
 }
 
-// Repeat every (story_length * duration + pause) milliseconds
-setInterval(showFullStory, 5000 + (3000 * storyContent.length));
+// start immediately and repeat
+showStorySeparate();
+setInterval(showStorySeparate, storyContent.length * durationPerItem + pauseAfterAll + 1000);
 
 </script>
 """, height=0)
