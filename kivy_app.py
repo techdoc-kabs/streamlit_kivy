@@ -1,63 +1,51 @@
 import streamlit as st
-import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder
+import streamlit.components.v1 as components
 
-# ---------- PAGE CONFIG ----------
-st.set_page_config(page_title="Responsive Layout", layout="wide")
+st.set_page_config(page_title="Sidebar Toggle Demo", layout="wide")
 
-# ---------- SIDEBAR TOGGLE ----------
-if "sidebar_open" not in st.session_state:
-    st.session_state.sidebar_open = True  # PC default open
-
-def toggle_sidebar():
-    st.session_state.sidebar_open = not st.session_state.sidebar_open
-
-# Menu button at top
-st.button("☰ Menu", on_click=toggle_sidebar)
+st.title("Custom Sidebar Toggle with Hamburger Menu")
 
 # Sidebar content
-if st.session_state.sidebar_open:
-    with st.sidebar:
-        st.header("Sidebar Menu")
-        st.write("This is the sidebar content.")
-        theme_choice = st.radio("Theme:", ["Light", "Dark"], index=0)
+with st.sidebar:
+    st.header("Sidebar Menu")
+    st.write("Your sidebar content goes here")
 
-# ---------- THEME ADAPTATION ----------
-if "theme" not in st.session_state:
-    st.session_state.theme = "Light"
-
-if "theme_choice" in locals():
-    st.session_state.theme = theme_choice
-
-bg_color = "#000000" if st.session_state.theme == "Dark" else "#FFFFFF"
-text_color = "#FFFFFF" if st.session_state.theme == "Dark" else "#000000"
-
-st.markdown(
-    f"""
+# Add custom hamburger menu button with CSS
+st.markdown("""
     <style>
-    .main, .block-container, .stDataFrame {{
-        background-color: {bg_color} !important;
-        color: {text_color} !important;
-    }}
+    .menu-button {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 8px;
+        margin: 0;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        z-index: 9999;
+    }
+    .menu-icon {
+        width: 25px;
+        height: 3px;
+        background-color: #333;
+        margin: 5px 0;
+        border-radius: 2px;
+        transition: 0.4s;
+    }
     </style>
-    """,
-    unsafe_allow_html=True,
-)
 
-# ---------- SAMPLE DATA ----------
-df = pd.DataFrame(
-    {f"Col{i}": [f"Data {j}" for j in range(1, 6)] for i in range(1, 21)}  # 20 columns
-)
+    <button class="menu-button" onclick="toggleSidebar()">
+        <div class="menu-icon"></div>
+        <div class="menu-icon"></div>
+        <div class="menu-icon"></div>
+    </button>
 
-# ---------- NORMAL TABLE ----------
-st.subheader("Normal Table")
-st.dataframe(df)
-
-# ---------- AGGRID TABLE ----------
-st.subheader("AgGrid Table")
-gb = GridOptionsBuilder.from_dataframe(df)
-gb.configure_default_column(resizable=True)
-gb.configure_grid_options(domLayout='autoHeight')
-gridOptions = gb.build()
-
-AgGrid(df, gridOptions=gridOptions, fit_columns_on_grid_load=True)
+    <script>
+    function toggleSidebar() {
+        const sidebarToggle = window.parent.document.querySelector('button[title="Collapse sidebar"]');
+        if (sidebarToggle) {
+            sidebarToggle.click();
+        }
+    }
+    </script>
+""", unsafe_allow_html=True)
