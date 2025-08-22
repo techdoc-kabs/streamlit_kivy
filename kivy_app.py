@@ -1,10 +1,9 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Floating Story Carousel Example")
-st.write("A floating notification that cycles through text and images like a story.")
+st.title("Floating Full-Story Carousel")
+st.write("Displays the full story sequence at once, then disappears, then repeats.")
 
-# HTML + CSS + JS for story carousel
 components.html("""
 <style>
 #story-notice {
@@ -41,30 +40,31 @@ components.html("""
 <script>
 const storyContent = [
     {type: 'text', content: '💬 Hi! Talk to us'},
-    {type: 'image', content: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?&w=200'},  // example image
-    {type: 'image', content: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?&w=200'},  // example sun/dog
+    {type: 'image', content: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?&w=200'},
+    {type: 'image', content: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?&w=200'},
     {type: 'text', content: '🌞 Enjoy your day!'}
 ];
 
-let index = 0;
-
-function showStory() {
+function showFullStory() {
     const notice = document.getElementById('story-notice');
-    const current = storyContent[index];
-    
-    if(current.type === 'text') {
-        notice.innerHTML = current.content;
-    } else if(current.type === 'image') {
-        notice.innerHTML = `<img src='${current.content}'>`;
+    // Build full HTML
+    let html = '';
+    for (let i=0; i<storyContent.length; i++){
+        if(storyContent[i].type === 'text'){
+            html += '<div>' + storyContent[i].content + '</div>';
+        } else if(storyContent[i].type === 'image'){
+            html += '<img src="' + storyContent[i].content + '">';
+        }
     }
-    
-    notice.classList.add('show');  // slide in
-    setTimeout(() => notice.classList.remove('show'), 3000);  // slide out after 3s
-    
-    index = (index + 1) % storyContent.length;
+    notice.innerHTML = html;
+    notice.classList.add('show');  // show full story
+
+    // Hide after story duration
+    setTimeout(() => notice.classList.remove('show'), 3000 * storyContent.length);
 }
 
-// Repeat every 5 seconds
-setInterval(showStory, 5000);
+// Repeat every (story_length * duration + pause) milliseconds
+setInterval(showFullStory, 5000 + (3000 * storyContent.length));
+
 </script>
 """, height=0)
