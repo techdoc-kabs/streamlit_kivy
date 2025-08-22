@@ -1,5 +1,7 @@
-streamlit==1.38.0
-fastapi
-uvicorn
-pydantic
-
+streamlit>=1.25.0
+pandas>=2.0.0
+Pillow>=10.0.0
+streamlit-option-menu>=0.5.2
+streamlit-aggrid>=0.5.7
+streamlit-javascript>=0.1.6
+requests>=2.31.0
