@@ -1,111 +1,108 @@
+import streamlit as st
+from st_aggrid import AgGrid
+from streamlit_option_menu import option_menu
+from streamlit_javascript import st_javascript
+import pandas as pd
+from PIL import Image
 
-import kivy
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
-import sqlite3
-from datetime import datetime
-import requests
+# ---- Detect screen width ----
+screen_width = st_javascript("window.innerWidth") or 800
 
-API_URL = "API_URL = "https://streamlit-kivy.onrender.com/patients"
+# ---- Detect current theme (light/dark) ----
+theme = st.get_option("theme") or "light"
 
-DB = "offline_patients.db"
+# ---- Set adaptive colors based on theme ----
+if theme == "dark":
+    background_color = "#0e1117"
+    text_color = "#FFFFFF"
+    table_header_color = "#1f1f1f"
+    menu_selected_bg = "#1f1f1f"
+else:
+    background_color = "#FFFFFF"
+    text_color = "#000000"
+    table_header_color = "#f0f0f0"
+    menu_selected_bg = "#0d6efd"
 
-# Setup local DB
-def create_local_db():
-    conn = sqlite3.connect(DB)
-    c = conn.cursor()
-    c.execute('''
-        CREATE TABLE IF NOT EXISTS patients (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            age INTEGER NOT NULL,
-            gender TEXT NOT NULL,
-            date TEXT NOT NULL,
-            synced INTEGER DEFAULT 0
-        )
-    ''')
-    conn.commit()
-    conn.close()
+# ---- Adaptive font size ----
+if screen_width < 600:
+    font_size = 14
+elif screen_width < 900:
+    font_size = 18
+else:
+    font_size = 24
 
-class RegistrationForm(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(orientation='vertical', **kwargs)
+# ---- Inject CSS for theme and sidebar ----
+st.markdown(f"""
+<style>
+/* Body background and text */
+body {{
+    background-color: {background_color};
+    color: {text_color};
+}}
+/* Force sidebar width */
+.css-1d391kg {{
+    min-width: 250px !important;
+}}
+@media screen and (max-width: 600px){{
+    .css-1d391kg {{min-width: 200px !important;}}
+}}
+/* Sidebar font */
+.sidebar-text {{
+    font-size: {font_size}px;
+}}
+/* Table header */
+.ag-header-cell-label {{
+    background-color: {table_header_color} !important;
+    color: {text_color} !important;
+}}
+</style>
+""", unsafe_allow_html=True)
 
-        self.name = TextInput(hint_text="Full Name")
-        self.age = TextInput(hint_text="Age", input_filter='int')
-        self.gender = TextInput(hint_text="Gender")
+# ---- Sidebar toggle button (hamburger) ----
+menu_clicked = st.button("☰ Menu")
+if menu_clicked:
+    st_javascript("""
+        const sidebar = window.parent.document.querySelector('div[data-testid="stSidebar"]');
+        if (sidebar) sidebar.style.display = (sidebar.style.display === 'none') ? 'block' : 'none';
+    """)
 
-        self.add_widget(Label(text="Patient Registration (Offline)"))
-        self.add_widget(self.name)
-        self.add_widget(self.age)
-        self.add_widget(self.gender)
+# ---- Sidebar content ----
+if screen_width < 600:
+    st.selectbox("Choose option", ["Option 1", "Option 2", "Option 3"])
+else:
+    st.sidebar.selectbox("Choose option", ["Option 1", "Option 2", "Option 3"])
+st.sidebar.slider("Select value", 0, 100)
 
-        self.submit_btn = Button(text="Register Offline")
-        self.submit_btn.bind(on_press=self.save_patient)
-        self.add_widget(self.submit_btn)
+# ---- Responsive option menu ----
+orientation = "vertical" if screen_width < 600 else "horizontal"
+menu_styles = {
+    "container": {"width": "100%"},
+    "nav-link": {"font-size": f"{font_size}px", "text-align": "center", "color": text_color},
+    "nav-link-selected": {"background-color": menu_selected_bg}
+}
+selected = option_menu(
+    menu_title=None,
+    options=["Home", "Settings", "Profile"],
+    icons=["house", "gear", "person"],
+    menu_icon="cast",
+    default_index=0,
+    orientation=orientation,
+    styles=menu_styles
+)
+st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>You selected: {selected}</p>", unsafe_allow_html=True)
 
-        self.sync_btn = Button(text="🔄 Sync with Server")
-        self.sync_btn.bind(on_press=self.sync_data)
-        self.add_widget(self.sync_btn)
+# ---- Responsive table ----
+df = pd.DataFrame({
+    "Name": ["Alice", "Bob", "Charlie", "David"],
+    "Score": [95, 87, 78, 92],
+    "Remarks": ["Excellent", "Good", "Average", "Very Good"]
+})
+st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Student Scores:</p>", unsafe_allow_html=True)
+AgGrid(df, fit_columns_on_grid_load=True)
 
-        self.status = Label()
-        self.add_widget(self.status)
-
-        create_local_db()
-
-    def save_patient(self, instance):
-        name = self.name.text
-        age = self.age.text
-        gender = self.gender.text
-        date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-        if name and age and gender:
-            conn = sqlite3.connect(DB)
-            c = conn.cursor()
-            c.execute("INSERT INTO patients (name, age, gender, date, synced) VALUES (?, ?, ?, ?, 0)",
-                      (name, int(age), gender, date))
-            conn.commit()
-            conn.close()
-            self.status.text = "✅ Saved locally!"
-            self.name.text = self.age.text = self.gender.text = ""
-        else:
-            self.status.text = "❌ Fill all fields!"
-
-    def sync_data(self, instance):
-        try:
-            conn = sqlite3.connect(DB)
-            c = conn.cursor()
-            unsynced = c.execute("SELECT * FROM patients WHERE synced = 0").fetchall()
-
-            if not unsynced:
-                self.status.text = "✅ No unsynced data."
-                return
-
-            success_count = 0
-            for row in unsynced:
-                payload = {
-                    "name": row[1],
-                    "age": row[2],
-                    "gender": row[3],
-                    "date": row[4]
-                }
-                response = requests.post(API_URL, json=payload)
-                if response.status_code == 200:
-                    c.execute("UPDATE patients SET synced = 1 WHERE id = ?", (row[0],))
-                    success_count += 1
-
-            conn.commit()
-            conn.close()
-            self.status.text = f"✅ Synced {success_count} records."
-        except Exception as e:
-            self.status.text = f"❌ Sync failed: {str(e)}"
-
-class OfflineApp(App):
-    def build(self):
-        return RegistrationForm()
-
-if __name__ == "__main__":
-    OfflineApp().run()
+# ---- Responsive image ----
+# Replace these with images suitable for light/dark themes
+img_path = "example_dark.jpg" if theme == "dark" else "example_light.jpg"
+img = Image.open(img_path)
+st.markdown(f"<p style='font-size:{font_size}px; color:{text_color}'>Example Image:</p>", unsafe_allow_html=True)
+st.image(img, use_column_width=True)
