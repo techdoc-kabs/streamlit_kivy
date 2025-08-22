@@ -1,23 +1,22 @@
 import streamlit as st
-import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Sidebar Toggle Demo", layout="wide")
+st.set_page_config(page_title="Sidebar Toggle", layout="wide")
 
-st.title("Custom Sidebar Toggle with Hamburger Menu")
+st.title("Custom Sidebar Toggle Button")
 
 # Sidebar content
 with st.sidebar:
     st.header("Sidebar Menu")
-    st.write("Your sidebar content goes here")
+    st.write("Some menu content here...")
 
-# Add custom hamburger menu button with CSS
+# Add Hamburger icon using HTML + JS
 st.markdown("""
     <style>
     .menu-button {
         background: none;
         border: none;
         cursor: pointer;
-        padding: 8px;
+        padding: 5px;
         margin: 0;
         position: fixed;
         top: 15px;
@@ -27,10 +26,9 @@ st.markdown("""
     .menu-icon {
         width: 25px;
         height: 3px;
-        background-color: #333;
+        background-color: black;
         margin: 5px 0;
         border-radius: 2px;
-        transition: 0.4s;
     }
     </style>
 
@@ -42,7 +40,8 @@ st.markdown("""
 
     <script>
     function toggleSidebar() {
-        const sidebarToggle = window.parent.document.querySelector('button[title="Collapse sidebar"]');
+        // Find the real Streamlit sidebar toggle button and click it
+        const sidebarToggle = window.parent.document.querySelector('[data-testid="stSidebarCollapseButton"]');
         if (sidebarToggle) {
             sidebarToggle.click();
         }
