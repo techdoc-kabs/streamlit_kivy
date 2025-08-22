@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("True Floating Story")
-st.write("Each item appears one by one, floats above page content, then all disappear together.")
+st.title("Floating Story - Streamlit Compatible")
+st.write("Sequential floating items that stack and disappear together.")
 
 components.html("""
 <style>
@@ -14,22 +14,25 @@ components.html("""
     padding: 10px 15px;
     border-radius: 12px;
     font-size: 16px;
-    z-index: 99999;
+    z-index: 10000;
     box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     opacity: 0;
-    transition: all 0.5s ease-in-out;
+    transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
     max-width: 220px;
     text-align: center;
     cursor: pointer;
 }
 .floating-story.show {
     opacity: 1;
+    transform: translateY(0);
 }
 .floating-story img {
     max-width: 100%;
     border-radius: 8px;
 }
 </style>
+
+<div id="story-container"></div>
 
 <script>
 const storyContent = [
@@ -40,10 +43,12 @@ const storyContent = [
 ];
 
 const durationPerItem = 1000; // 1 sec per item
-const pauseAfterAll = 2000;   // 2 sec pause after all appear
-const spacing = 90;           // vertical spacing in px
+const pauseAfterAll = 2000;   // 2 sec after all appear
+const spacing = 90;
 
 function showFloatingStory() {
+    const container = document.getElementById('story-container');
+    container.innerHTML = '';
     const divs = [];
 
     storyContent.forEach((item, i) => {
@@ -56,25 +61,22 @@ function showFloatingStory() {
             div.innerHTML = `<img src="${item.content}">`;
         }
         div.onclick = () => window.open('https://example.com','_blank');
-        document.body.appendChild(div); // append directly to body
+        container.appendChild(div);
         divs.push(div);
     });
 
-    // sequentially show items
     divs.forEach((div, i) => {
         setTimeout(() => div.classList.add('show'), i * durationPerItem);
     });
 
-    // hide all at once
     setTimeout(() => {
         divs.forEach(div => div.classList.remove('show'));
-        setTimeout(() => divs.forEach(div => div.remove()), 500); // remove from DOM
+        setTimeout(() => divs.forEach(div => div.remove()), 500);
     }, divs.length * durationPerItem + pauseAfterAll);
 }
 
-// start immediately and repeat
+// Start immediately and repeat
 showFloatingStory();
 setInterval(showFloatingStory, storyContent.length * durationPerItem + pauseAfterAll + 1000);
-
 </script>
 """, height=0)
