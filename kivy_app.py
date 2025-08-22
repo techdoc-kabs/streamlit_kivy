@@ -1,23 +1,28 @@
 import streamlit as st
 
-st.set_page_config(page_title="Custom Sidebar Toggle", layout="wide")
+st.set_page_config(page_title="Sidebar Toggle Button", layout="wide")
 
-# State for sidebar visibility
-if "show_sidebar" not in st.session_state:
-    st.session_state.show_sidebar = True
+# Inject JavaScript to trigger the real Streamlit sidebar arrow
+toggle_sidebar = """
+<script>
+function toggleSidebar() {
+    const sidebarButton = window.parent.document.querySelector('[data-testid="collapsedControl"]');
+    if (sidebarButton) {
+        sidebarButton.click();
+    }
+}
+</script>
+"""
 
-# Main page button to toggle sidebar
-if st.button("☰ Menu"):
-    st.session_state.show_sidebar = not st.session_state.show_sidebar
+# Place the JS in the app
+st.markdown(toggle_sidebar, unsafe_allow_html=True)
 
-# Show sidebar content only if state is True
-if st.session_state.show_sidebar:
-    with st.sidebar:
-        st.header("Sidebar Menu")
-        st.write("This is your sidebar content...")
-        st.button("Option 1")
-        st.button("Option 2")
+# Button that calls the JavaScript function
+st.markdown(
+    '<button onclick="toggleSidebar()" style="font-size:18px; padding:5px 10px; cursor:pointer;">☰ Menu</button>',
+    unsafe_allow_html=True
+)
 
 # Main page content
 st.title("Main Page")
-st.write("Click ☰ Menu to toggle the sidebar")
+st.write("Click ☰ Menu to toggle the real sidebar arrow")
