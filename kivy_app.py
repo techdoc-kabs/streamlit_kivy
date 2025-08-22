@@ -1,57 +1,48 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-def auto_toast_with_action(
-    message,
-    icon="info",
-    interval=5000,
-    duration=3000,
-    position="top-end",
-    action_text="👉 Click me",
-    action_url="#"
-):
-    """
-    Display an automatic repeating toast with an interactive action.
-    
-    Args:
-        message (str): Main toast message.
-        icon (str): 'info', 'success', 'warning', 'error'.
-        interval (int): Time between each toast in milliseconds.
-        duration (int): Toast visibility duration in milliseconds.
-        position (str): Toast position: 'top-end', 'top-start', 'bottom-end', 'bottom-start'.
-        action_text (str): Text or emoji for the clickable action.
-        action_url (str): URL or JS link triggered by clicking the action.
-    """
-    toast_html = f"""
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-    function showToast() {{
-        const Toast = Swal.mixin({{
-            toast: true,
-            position: '{position}',
-            showConfirmButton: false,
-            timer: {duration},
-            timerProgressBar: true,
-            html: `{message} <a href='{action_url}' target='_blank' style='text-decoration:none; margin-left:10px;'>{action_text}</a>`
-        }});
-        Toast.fire({{
-            icon: '{icon}'
-        }});
-    }}
-    setInterval(showToast, {interval});
-    </script>
-    """
-    components.html(toast_html, height=0)
+st.title("Floating Animated Notification Example")
+st.write("This simulates an in-page animated notification or banner.")
 
-# --- Example Usage ---
-st.title("Interactive Auto Toast")
-st.write("This toast repeats automatically and includes a clickable emoji.")
+# HTML + CSS + JS for a floating notification
+components.html("""
+<style>
+#floating-notice {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: #00aaff;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-size: 16px;
+    z-index: 9999;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+    opacity: 0;
+    transform: translateX(100%);
+    transition: all 0.5s ease-in-out;
+    cursor: pointer;
+}
+#floating-notice.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+</style>
 
-auto_toast_with_action(
-    message="Hi! Talk to us",
-    icon="info",
-    interval=5000,
-    duration=3000,
-    action_text="💬",
-    action_url="https://example.com/chat"
-)
+<div id="floating-notice" onclick="window.open('https://example.com','_blank')">
+    💬 Hi! Talk to us
+</div>
+
+<script>
+function showNotice(){
+    const notice = document.getElementById('floating-notice');
+    notice.classList.add('show');  // slide in
+    setTimeout(() => {
+        notice.classList.remove('show');  // slide out after 3s
+    }, 3000);
+}
+
+// Show every 5 seconds
+setInterval(showNotice, 5000);
+</script>
+""", height=0)
