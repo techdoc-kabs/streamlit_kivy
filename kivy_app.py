@@ -1,90 +1,73 @@
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
-from streamlit_option_menu import option_menu
-import base64
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 
-# ------------------ Detect Dark/Light Mode ------------------
-def get_theme():
-    return st.session_state.get("theme", "light")
+# ---------- Detect system theme ----------
+if "theme" not in st.session_state:
+    st.session_state.theme = "light"
 
-# JS to detect system theme
-st.markdown("""
-    <script>
-    const theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? "dark" : "light";
-    window.parent.postMessage({theme: theme}, "*");
-    </script>
-""", unsafe_allow_html=True)
+system_theme = st.get_option("theme.base")
+if system_theme == "dark":
+    st.session_state.theme = "dark"
+else:
+    st.session_state.theme = "light"
 
-# ------------------ Sidebar Toggle Button ------------------
-menu_btn = st.button("☰ Menu", key="menu_btn")
-if menu_btn:
-    st.session_state["sidebar_open"] = not st.session_state.get("sidebar_open", True)
-
-if st.session_state.get("sidebar_open", True):
-    with st.sidebar:
-        st.markdown("### Sidebar Menu")
-        st.markdown("Adaptive font sizes & dark mode support")
-
-# ------------------ Option Menu ------------------
-selected = option_menu(
-    menu_title=None,
-    options=["Home", "Dashboard", "Reports", "Settings", "Help"],
-    icons=["house", "bar-chart", "file-text", "gear", "question-circle"],
-    orientation="horizontal",
+# ---------- Page config ----------
+st.set_page_config(
+    page_title="Adaptive Layout Demo",
+    layout="wide",
+    initial_sidebar_state="expanded" if st.session_state.theme == "light" else "collapsed"
 )
 
-# ------------------ Adaptive Layout ------------------
-theme = get_theme()
-bg_color = "#1E1E1E" if theme == "dark" else "#FFFFFF"
-font_color = "#FFFFFF" if theme == "dark" else "#000000"
+# ---------- Sidebar manual toggle ----------
+with st.sidebar:
+    st.image("paul.jpg", use_column_width=True)
+    st.title("Sidebar Menu")
+    st.write("Toggle me manually on mobile!")
+    theme_choice = st.radio("Choose AgGrid Theme", ["streamlit", "alpine", "balham", "material"])
 
-st.markdown(
-    f"""
-    <style>
-    .main-container {{
-        background-color: {bg_color};
-        color: {font_color};
-        transition: all 0.3s ease;
-    }}
-    .stApp {{
-        background-color: {bg_color};
-    }}
-    .stButton > button {{
-        color: {font_color};
-    }}
-    .nav-link {{
-        color: {font_color} !important;
-    }}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-# ------------------ Image ------------------
-st.image("paul.jpg", use_column_width=True)
-
-# ------------------ DataFrame with AgGrid ------------------
-data = {
-    "Name": ["Paul", "John", "Mary", "Anna", "James"],
-    "Age": [25, 30, 22, 28, 35],
-    "City": ["Kampala", "Gulu", "Mbarara", "Entebbe", "Jinja"],
-    "Score": [85, 90, 78, 92, 88],
-    "Grade": ["B", "A", "C", "A", "B"]
-}
+# ---------- Sample Data with 20 columns ----------
+data = {f"Col{i}": [f"Data {i}-{j}" for j in range(1, 6)] for i in range(1, 21)}
 df = pd.DataFrame(data)
 
+# ---------- Option Menu Style Adaptation ----------
+menu_style = {
+    "backgroundColor": "#000" if st.session_state.theme == "dark" else "#fff",
+    "color": "#fff" if st.session_state.theme == "dark" else "#000",
+    "padding": "10px",
+    "borderRadius": "8px"
+}
+
+st.markdown(
+    f"<div style='background-color:{menu_style['backgroundColor']};"
+    f"color:{menu_style['color']}; padding:10px; border-radius:8px; text-align:center;'>"
+    f"**Main Content Area with Adaptive Theme**</div>", unsafe_allow_html=True
+)
+
+# ---------- Normal Streamlit Table ----------
+st.subheader("Normal Streamlit Table")
+st.dataframe(df, use_container_width=True)
+
+# ---------- AgGrid Table with Responsiveness ----------
+st.subheader("AgGrid Table (Responsive)")
 gb = GridOptionsBuilder.from_dataframe(df)
-gb.configure_pagination(paginationAutoPageSize=True)
+gb.configure_pagination(enabled=True)
 gb.configure_side_bar()
-gb.configure_default_column(resizable=True, wrapText=True, autoHeight=True)
-gridOptions = gb.build()
+gb.configure_default_column(
+    resizable=True, wrapHeaderText=True, autoHeaderHeight=True
+)
+gb.configure_grid_options(domLayout='autoHeight')
+grid_options = gb.build()
 
-AgGrid(df, gridOptions=gridOptions, height=300, theme="dark" if theme == "dark" else "light")
-
-# ------------------ Columns Test ------------------
-st.markdown("### 5-Column Layout Test")
-cols = st.columns(5)
-for i, col in enumerate(cols):
-    col.markdown(f"**Column {i+1}**")
-    col.write("Content adapts to screen size")
+AgGrid(
+    df,
+    gridOptions=grid_options,
+    theme=theme_choice,
+    enable_enterprise_modules=False,
+    data_return_mode=DataReturnMode.FILTERED_AND_SORTED,
+    update_mode=GridUpdateMode.NO_UPDATE,
+    fit_columns_on_grid_load=False,
+    height=300,
+    allow_unsafe_jscode=True,
+    reload_data=True
+)
