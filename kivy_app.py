@@ -1,23 +1,37 @@
 import streamlit as st
 from streamlit_javascript import st_javascript
 
-# Add a menu button
-if "sidebar_open" not in st.session_state:
-    st.session_state.sidebar_open = False
+# Load SweetAlert2 once
+st.markdown("""
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+""", unsafe_allow_html=True)
 
-# JavaScript to toggle sidebar visibility
-toggle_sidebar_js = """
-() => {
-    const sidebar = window.parent.document.querySelector("section[data-testid='stSidebar']");
-    const collapseButton = window.parent.document.querySelector("button[title='Close sidebar']");
-    if (sidebar && collapseButton) {
-        collapseButton.click();
-    }
-}
-"""
+def sweet_alert(title, message, icon="info", timer=None):
+    """
+    Show a SweetAlert2 popup in Streamlit.
+    
+    Args:
+        title (str): Title of the popup.
+        message (str): Message/body text.
+        icon (str): 'success', 'error', 'warning', 'info', 'question'
+        timer (int): Auto-close time in ms (optional)
+    """
+    timer_code = f"timer: {timer}," if timer else ""
+    st_javascript(f"""
+    () => {{
+        Swal.fire({{
+          title: '{title}',
+          text: '{message}',
+          icon: '{icon}',
+          {timer_code}
+          confirmButtonText: 'OK'
+        }});
+    }}
+    """)
 
-st.markdown("<h1>Main Page Content</h1>", unsafe_allow_html=True)
+# Example usage
+if st.button("Show Success Alert"):
+    sweet_alert("Done!", "Your data was saved successfully.", "success")
 
-# Custom menu button
-if st.button("☰ Menu"):
-    st_javascript(toggle_sidebar_js)
+if st.button("Show Auto-close Alert"):
+    sweet_alert("Auto Close", "This will close in 2 sec.", "info", timer=2000)
