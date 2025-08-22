@@ -1,14 +1,13 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Sequential Non-Overlapping Story")
-st.write("Each item appears one by one, stacks, then all disappear together.")
+st.title("Sequential Floating Story - Non-Overlapping")
+st.write("Items appear one by one, stacked above each other, then all disappear together.")
 
 components.html("""
 <style>
 .floating-story {
     position: fixed;
-    bottom: 20px; 
     right: 20px;
     background-color: #ff6600;
     color: white;
@@ -22,7 +21,6 @@ components.html("""
     max-width: 220px;
     text-align: center;
     cursor: pointer;
-    margin-top: 10px; /* spacing between items */
 }
 .floating-story.show {
     opacity: 1;
@@ -30,11 +28,6 @@ components.html("""
 .floating-story img {
     max-width: 100%;
     border-radius: 8px;
-}
-#story-container {
-    display: flex;
-    flex-direction: column-reverse; /* newest at bottom */
-    align-items: flex-end;
 }
 </style>
 
@@ -50,17 +43,18 @@ const storyContent = [
 
 const durationPerItem = 1000; // 1 sec per item
 const pauseAfterAll = 2000;   // 2 sec pause after all appear
+const spacing = 80;           // vertical spacing between items in px
 
-function showStackedStory(){
+function showStackedStory() {
     const container = document.getElementById('story-container');
     container.innerHTML = ''; // clear previous
 
     const divs = [];
 
-    // create divs for each item
-    storyContent.forEach(item => {
+    storyContent.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'floating-story';
+        div.style.bottom = (20 + i * spacing) + 'px'; // dynamic vertical position
         if(item.type === 'text'){
             div.innerHTML = item.content;
         } else if(item.type === 'image'){
@@ -71,7 +65,7 @@ function showStackedStory(){
         divs.push(div);
     });
 
-    // sequentially show items without overlap
+    // sequentially show items
     divs.forEach((div, i) => {
         setTimeout(() => div.classList.add('show'), i * durationPerItem);
     });
@@ -83,6 +77,5 @@ function showStackedStory(){
 // start immediately and repeat
 showStackedStory();
 setInterval(showStackedStory, storyContent.length * durationPerItem + pauseAfterAll + 1000);
-
 </script>
 """, height=0)
