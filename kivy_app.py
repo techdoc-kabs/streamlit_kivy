@@ -1,24 +1,27 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Floating Story - Streamlit Compatible")
-st.write("Sequential floating items that stack and disappear together.")
+st.title("Sequential Horizontal Story")
+st.write("Items flow horizontally, appear one by one, then disappear together.")
 
 components.html("""
 <style>
+#story-container {
+    display: flex;
+    flex-wrap: wrap;  /* allows items to flow to next line */
+    justify-content: center; /* center horizontally */
+    gap: 20px; /* spacing between items */
+    margin-top: 50px;
+}
 .floating-story {
-    position: fixed;
-    right: 20px;
     background-color: #ff6600;
     color: white;
     padding: 10px 15px;
     border-radius: 12px;
     font-size: 16px;
-    z-index: 10000;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     opacity: 0;
     transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-    max-width: 220px;
+    max-width: 150px;
     text-align: center;
     cursor: pointer;
 }
@@ -37,16 +40,15 @@ components.html("""
 <script>
 const storyContent = [
     {type: 'text', content: '💬 Hi! Talk to us'},
-    {type: 'image', content: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?&w=200'},
-    {type: 'image', content: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?&w=200'},
+    {type: 'image', content: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?&w=150'},
+    {type: 'image', content: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?&w=150'},
     {type: 'text', content: '🌞 Enjoy your day!'}
 ];
 
 const durationPerItem = 1000; // 1 sec per item
-const pauseAfterAll = 2000;   // 2 sec after all appear
-const spacing = 90;
+const pauseAfterAll = 2000;   // 2 sec pause after all appear
 
-function showFloatingStory() {
+function showFlowingStory() {
     const container = document.getElementById('story-container');
     container.innerHTML = '';
     const divs = [];
@@ -54,7 +56,6 @@ function showFloatingStory() {
     storyContent.forEach((item, i) => {
         const div = document.createElement('div');
         div.className = 'floating-story';
-        div.style.bottom = (20 + i * spacing) + 'px';
         if(item.type === 'text'){
             div.innerHTML = item.content;
         } else if(item.type === 'image'){
@@ -65,18 +66,20 @@ function showFloatingStory() {
         divs.push(div);
     });
 
+    // sequentially show items
     divs.forEach((div, i) => {
         setTimeout(() => div.classList.add('show'), i * durationPerItem);
     });
 
+    // hide all at once
     setTimeout(() => {
         divs.forEach(div => div.classList.remove('show'));
         setTimeout(() => divs.forEach(div => div.remove()), 500);
     }, divs.length * durationPerItem + pauseAfterAll);
 }
 
-// Start immediately and repeat
-showFloatingStory();
-setInterval(showFloatingStory, storyContent.length * durationPerItem + pauseAfterAll + 1000);
+// start immediately and repeat
+showFlowingStory();
+setInterval(showFlowingStory, storyContent.length * durationPerItem + pauseAfterAll + 1000);
 </script>
-""", height=0)
+""", height=300)
