@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Circular Story with Arrows")
-st.write("Items appear sequentially along a circle, stay visible longer, and you can navigate with arrows.")
+st.title("Circular Story with Arrows Inside Container")
+st.write("Items appear sequentially around a circle, arrows now visible inside container.")
 
 components.html("""
 <style>
@@ -12,6 +12,7 @@ components.html("""
     height: 400px;
     margin: auto;
     border-radius: 50%;
+    background: #f5f5f5;
 }
 .floating-story {
     position: absolute;
@@ -42,14 +43,16 @@ components.html("""
     cursor: pointer;
     user-select: none;
     color: #333;
+    transform: translateY(-50%);
 }
 .arrow.left { left: -50px; }
 .arrow.right { right: -50px; }
 </style>
 
-<div id="circle-container"></div>
-<div class="arrow left">&#8592;</div>
-<div class="arrow right">&#8594;</div>
+<div id="circle-container">
+    <div class="arrow left">&#8592;</div>
+    <div class="arrow right">&#8594;</div>
+</div>
 
 <script>
 const storyContent = [
@@ -62,14 +65,15 @@ const storyContent = [
 ];
 
 const container = document.getElementById('circle-container');
-const durationPerItem = 1000; // 1 sec per item
-const pauseAfterAll = 5000;   // stay 5 seconds after all appear
+const durationPerItem = 1000;
+const pauseAfterAll = 5000;
 const radius = 150;
 let currentIndex = 0;
 let divs = [];
 
 function createCircle() {
-    container.innerHTML = '';
+    // Remove previous items
+    divs.forEach(d=>d.remove());
     divs = [];
     const n = storyContent.length;
     const centerX = container.clientWidth/2;
@@ -79,8 +83,8 @@ function createCircle() {
         const div = document.createElement('div');
         div.className='floating-story';
         const angle = 2*Math.PI*i/n;
-        const x = centerX + radius * Math.cos(angle) - 75; // 75 = half max-width
-        const y = centerY + radius * Math.sin(angle) - 25; // 25 = approx half height
+        const x = centerX + radius * Math.cos(angle) - 75;
+        const y = centerY + radius * Math.sin(angle) - 25;
         div.style.left = x+'px';
         div.style.top = y+'px';
         if(item.type==='text'){
@@ -100,12 +104,12 @@ function showStory() {
     for(let i=0;i<divs.length;i++){
         setTimeout(()=>divs[i].classList.add('show'), i*durationPerItem);
     }
-    // Hide all after full cycle + pause
     setTimeout(()=>divs.forEach(div=>div.classList.remove('show')), divs.length*durationPerItem + pauseAfterAll);
 }
 
 // Manual navigation
 function navigate(offset){
+    if(divs.length===0) return;
     currentIndex = (currentIndex + offset + divs.length)%divs.length;
     divs.forEach(div=>div.classList.remove('show'));
     divs[currentIndex].classList.add('show');
