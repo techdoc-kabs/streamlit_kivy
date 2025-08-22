@@ -1,8 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.title("Sequential Flowing Story - Auto Size")
-st.write("Each item adapts its size to content, appears sequentially, then disappears together.")
+st.title("Sequential Flowing Story - Proper Auto Size")
+st.write("Each item adapts its size to content and stacks nicely.")
 
 components.html("""
 <style>
@@ -10,6 +10,7 @@ components.html("""
     display: flex;
     flex-wrap: wrap;  /* allow items to flow to next line */
     justify-content: center; /* center horizontally */
+    align-items: flex-start; /* don't stretch items vertically */
     gap: 20px; /* spacing between items */
     margin-top: 50px;
 }
@@ -45,7 +46,9 @@ const storyContent = [
     {type: 'text', content: '💬 Hi! Talk to us'},
     {type: 'image', content: 'https://images.unsplash.com/photo-1503023345310-bd7c1de61c7d?&w=150'},
     {type: 'image', content: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?&w=150'},
-    {type: 'text', content: '🌞 Enjoy your day!'}
+    {type: 'text', content: '🌞 Enjoy your day!'},
+    {type: 'text', content: 'Short text'},
+    {type: 'text', content: 'A longer sentence that should expand the container width'}
 ];
 
 const durationPerItem = 1000; // 1 sec per item
@@ -85,4 +88,4 @@ function showFlowingStory() {
 showFlowingStory();
 setInterval(showFlowingStory, storyContent.length * durationPerItem + pauseAfterAll + 1000);
 </script>
-""", height=300)
+""", height=400)
