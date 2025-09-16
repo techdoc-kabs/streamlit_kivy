@@ -613,7 +613,7 @@ if not current_level:
     # st.title("Main Menu")
 
     # ---------- Introductory image ----------
-    st.image("pauljpg", use_column_width=True)  # responsive width
+    st.image("paul.jpg", use_column_width=True)  # responsive width
 
     # Display cards
     st.markdown(get_cards_html(cards), unsafe_allow_html=True)
@@ -642,6 +642,7 @@ else:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()  # go back
         st.rerun()
+
 
 
 
