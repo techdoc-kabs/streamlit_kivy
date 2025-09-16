@@ -473,7 +473,7 @@ def get_device_type(width):
         w = int(width)
     except (ValueError, TypeError):
         return "desktop"
-    return "mobile" if w < 703 else "desktop"
+    return "mobile" if w < 320 else "desktop"
 
 device_width = st_javascript("window.innerWidth", key="screen_width") or 1024
 device_type = get_device_type(device_width)
@@ -581,3 +581,4 @@ clicked = display_card_menu(options, session_key="selected_page")
 
 if clicked:
     st.success(f"You clicked: {st.session_state['selected_page']}")
+
