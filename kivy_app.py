@@ -19,13 +19,13 @@ if "cart" not in st.session_state:
 st.markdown("""
     <style>
     .product-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 8px;
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 10px !important;
     }
-    @media (max-width: 350px) {
+    @media only screen and (max-width: 350px) {
         .product-grid {
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr) !important;
         }
     }
     .product-card {
@@ -34,7 +34,7 @@ st.markdown("""
         border-radius: 10px;
         text-align: center;
         padding: 10px;
-        font-family: Arial;
+        font-family: Arial, sans-serif;
     }
     .product-card img {
         width: 100%;
@@ -59,54 +59,41 @@ st.markdown("""
         padding: 2px 5px;
         border-radius: 4px;
     }
-    .add-to-cart {
-        display: inline-block;
-        margin-top: 6px;
+    .stButton button {
+        width: 100%;
         background: #f39c12;
         color: white;
-        padding: 6px 12px;
         border-radius: 6px;
         font-size: 13px;
-        cursor: pointer;
-        text-decoration: none;
+        font-weight: bold;
     }
-    .add-to-cart:hover {
+    .stButton button:hover {
         background: #e67e22;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# --- Render products ---
-html = '<div class="product-grid">'
+# --- Render Products in Grid ---
+cols_html = '<div class="product-grid">'
 for i, p in enumerate(products):
-    html += f"""<div class="product-card">
+    cols_html += f"""
+    <div class="product-card">
         <img src="{p['img']}" alt="{p['name']}">
         <div class="product-name">{p['name']}</div>
         <div class="product-price">{p['price']} <span class="discount">-{p['discount']}</span></div>
-        <a class="add-to-cart" href="?add={i}">🛒 Add to Cart</a>
+        <div id="btn{i}"></div>
     </div>
     """
-html += "</div>"
+cols_html += "</div>"
 
-st.markdown(html, unsafe_allow_html=True)
+# Inject HTML skeleton
+st.markdown(cols_html, unsafe_allow_html=True)
 
-# --- Handle Add to Cart ---
-query_params = st.query_params
-if "add" in query_params:
-    idx = int(query_params["add"])
-    if products[idx] not in st.session_state.cart:
-        st.session_state.cart.append(products[idx])
-        st.success(f"✅ {products[idx]['name']} added to cart!")
-
-# --- Cart Preview ---
-st.markdown("### 🛍️ Your Cart")
-if st.session_state.cart:
-    for item in st.session_state.cart:
-        st.write(f"- {item['name']} ({item['price']})")
-else:
-    st.info("Your cart is empty.")
-
-
-
-
-
+# Inject buttons into product cards
+for i, p in enumerate(products):
+    with st.container():
+        button_ph = st.empty()
+        with button_ph:
+            if st.button(f"🛒 Add to Cart", key=f"cart_{i}"):
+                st.session_state.cart.append(p)
+                st.success(f"✅ {p['name']} added to cart!")
