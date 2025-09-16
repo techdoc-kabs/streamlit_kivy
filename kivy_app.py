@@ -33,8 +33,11 @@ st.markdown("""
         border: 1px solid #ddd;
         border-radius: 10px;
         text-align: center;
-        padding: 10px;
+        padding: 12px;
         font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
     }
     .product-card img {
         width: 100%;
@@ -66,6 +69,7 @@ st.markdown("""
         border-radius: 6px;
         font-size: 13px;
         font-weight: bold;
+        margin-top: 8px;
     }
     .stButton button:hover {
         background: #e67e22;
@@ -73,27 +77,30 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Render Products in Grid ---
-cols_html = '<div class="product-grid">'
-for i, p in enumerate(products):
-    cols_html += f"""<div class="product-card">
-        <img src="{p['img']}" alt="{p['name']}">
-        <div class="product-name">{p['name']}</div>
-        <div class="product-price">{p['price']} <span class="discount">-{p['discount']}</span></div>
-        <div id="btn{i}"></div>
-    </div>
-    """
-cols_html += "</div>"
+# --- Render Products ---
+st.markdown('<div class="product-grid">', unsafe_allow_html=True)
 
-# Inject HTML skeleton
-st.markdown(cols_html, unsafe_allow_html=True)
-
-# Inject buttons into product cards
 for i, p in enumerate(products):
     with st.container():
-        button_ph = st.empty()
-        with button_ph:
-            if st.button(f"🛒 Add to Cart", key=f"cart_{i}"):
-                st.session_state.cart.append(p)
-                st.success(f"✅ {p['name']} added to cart!")
+        st.markdown(
+            f"""
+            <div class="product-card">
+                <img src="{p['img']}" alt="{p['name']}">
+                <div class="product-name">{p['name']}</div>
+                <div class="product-price">{p['price']} <span class="discount">-{p['discount']}</span></div>
+            </div>
+            """, unsafe_allow_html=True
+        )
+        if st.button("🛒 Add to Cart", key=f"cart_{i}"):
+            st.session_state.cart.append(p)
+            st.success(f"✅ {p['name']} added to cart!")
 
+st.markdown('</div>', unsafe_allow_html=True)
+
+# --- Cart Preview ---
+st.markdown("### 🛍️ Your Cart")
+if st.session_state.cart:
+    for item in st.session_state.cart:
+        st.write(f"- {item['name']} ({item['price']})")
+else:
+    st.info("Your cart is empty.")
