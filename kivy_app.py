@@ -434,3 +434,4 @@ def display_card_menu(options: list, session_key: str, num_cols: int = 4, next_s
 
     return False
 
+display_card_menu()
