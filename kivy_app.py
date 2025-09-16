@@ -186,8 +186,7 @@ st.markdown("""
 # --- Render products ---
 html = '<div class="product-grid">'
 for i, p in enumerate(products):
-    html += f"""
-    <div class="product-card">
+    html += f"""<div class="product-card">
         <img src="{p['img']}" alt="{p['name']}">
         <div class="product-name">{p['name']}</div>
         <div class="product-price">{p['price']} <span class="discount">-{p['discount']}</span></div>
@@ -213,5 +212,6 @@ if st.session_state.cart:
         st.write(f"- {item['name']} ({item['price']})")
 else:
     st.info("Your cart is empty.")
+
 
 
