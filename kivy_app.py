@@ -209,262 +209,85 @@ for _, row in df.iterrows():
     table_html += '<tr>' + ''.join(f'<td>{row[col]}</td>' for col in df.columns) + '</tr>'
 table_html += '</tbody></table>'
 
-# st.markdown(table_html, unsafe_allow_html=True)
-# import streamlit as st
-# import pandas as pd
-# from streamlit_card import card
-# from streamlit_js_eval import streamlit_js_eval
 
-# st.set_page_config(layout="wide")
-# st.title("Responsive Streamlit Cards + Table Demo")
+from streamlit_javascript import st_javascript
 
-# # ---------- Detect screen width ----------
-# try:
-#     width = streamlit_js_eval(js_expressions="window.innerWidth", key="SCR_WIDTH")
-# except Exception:
-#     width = 768  # fallback width
+# ---------------- DEVICE DETECTION ----------------
+width = st_javascript("window.innerWidth", key="screen_width") or 1024
 
-# st.write(f"📏 Detected screen width: {width}px")
+# ---------------- RESPONSIVE CSS ----------------
+st.markdown("""
+<style>
+.cards-wrap {
+    display: flex;
+    flex-wrap: wrap;          /* wrap cards to new row */
+    gap: 8px;
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+.cards-wrap > div {
+    flex: 0 0 48%;           /* 2 cards per row on mobile */
+    min-width: 140px;
+    box-sizing: border-box;
+}
+@media (max-width: 320px) {
+    .cards-wrap > div {
+        flex: 0 0 100%;       /* 1 column for tiny screens */
+        min-width: 100%;
+    }
+}
+</style>
+""", unsafe_allow_html=True)
 
-# # ---------- Decide card width dynamically ----------
-# if width >= 992:
-#     card_width = 300
-# elif width >= 481:
-#     card_width = 48  # percent
-# else:
-#     card_width = 90  # percent for tiny phones
+# ---------------- CARD DISPLAY FUNCTION ----------------
+def display_cards(options: list, session_key: str, next_screen=None):
+    st.markdown('<div class="cards-wrap">', unsafe_allow_html=True)
+    for idx, opt in enumerate(options):
+        st.markdown('<div>', unsafe_allow_html=True)
+        clicked = card(
+            title=opt.get("title", ""),
+            text=opt.get("text", ""),
+            key=f"{session_key}-{idx}",
+            styles={
+                "card": {
+                    "width": "100%",
+                    "height": "150px",
+                    "border-radius": "8px",
+                    "background": "#3498db",
+                    "color": "white",
+                    "text-align": "center",
+                    "box-shadow": "0 4px 12px rgba(0,0,0,0.25)"
+                },
+                "title": {"font-size": "24px"},
+                "text": {"font-size": "16px"},
+            }
+        )
+        if clicked:
+            st.session_state[session_key] = opt.get("text")
+            if next_screen:
+                st.session_state.screen = next_screen
+            st.session_state["__nav_triggered"] = True
+            return True
+        st.markdown('</div>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    return False
 
-# # ---------- Cards Data ----------
-# cards_data = [
-#     {"title": "Reports", "text": "View latest reports.", "image": "https://placekitten.com/300/300"},
-#     {"title": "Analytics", "text": "Explore charts.", "image": "https://placekitten.com/301/300"},
-#     {"title": "Archives", "text": "Browse files.", "image": "https://placekitten.com/302/300"},
-#     {"title": "Team", "text": "Team stats.", "image": "https://placekitten.com/303/300"},
-#     {"title": "Projects", "text": "Project overview.", "image": "https://placekitten.com/304/300"},
-#     {"title": "Settings", "text": "App configuration.", "image": "https://placekitten.com/305/300"},
-# ]
+# ---------------- APP ----------------
+st.title("Responsive Cards with Flex Wrapper (2 columns on mobile ≥321px)")
 
-# st.subheader("Clickable Streamlit Cards")
+if "screen" not in st.session_state:
+    st.session_state["screen"] = "main_menu"
 
-# # ---------- Render streamlit-card components ----------
-# clicked_card = None
-# for idx, c in enumerate(cards_data):
-#     res = card(
-#         title=c["title"],
-#         text=c["text"],
-#         image=c["image"],
-#         styles={
-#             "card": {
-#                 "width": f"{card_width}px" if width >= 992 else f"{card_width}%",
-#                 "height": "300px",
-#                 "border-radius": "20px",
-#                 "box-shadow": "0 0 10px rgba(0,0,0,0.3)",
-#                 "margin": "10px auto",
-#                 "display": "flex",
-#                 "flex-direction": "column",
-#                 "align-items": "center",
-#                 "justify-content": "center",
-#                 "overflow": "hidden"
-#             },
-#             "filter": {"background-color": "rgba(0, 0, 0, 0)"},
-#             "title": {"font-size": "18px"},
-#             "text": {"font-size": "14px"}
-#         }
-#     )
-#     if res:
-#         clicked_card = c["title"]
+cards = [
+    {"title": "🗓️", "text": "Schedules"},
+    {"title": "📚", "text": "Reports"},
+    {"title": "📈", "text": "Analysis"},
+    {"title": "📧", "text": "Messages"},
+    {"title": "🗃️", "text": "Files"},
+    {"title": "🗄️", "text": "Resources"},
+]
 
-# if clicked_card:
-#     st.success(f"You clicked on: {clicked_card}!")
-
-# # ---------- Responsive Table Section ----------
-# st.subheader("Responsive 10-Column Table")
-# df = pd.DataFrame({
-#     "ID": [1,2,3,4],
-#     "Name": ["Alice", "Bob", "Charlie", "Diana"],
-#     "Age": [24, 30, 28, 35],
-#     "Department": ["HR", "IT", "Finance", "Marketing"],
-#     "Position": ["Manager", "Developer", "Analyst", "Designer"],
-#     "Location": ["NY", "LA", "Chicago", "Houston"],
-#     "Experience": [5, 7, 3, 6],
-#     "Salary": ["50k", "70k", "45k", "60k"],
-#     "Projects": [3, 5, 2, 4],
-#     "Status": ["Active", "Active", "Inactive", "Active"]
-# })
-
-# # CSS for responsive table
-# st.markdown("""
-#     <style>
-#     .resp-table-fixed {
-#         width: 100% !important;
-#         border-collapse: collapse;
-#         table-layout: fixed;
-#     }
-#     .resp-table-fixed th, .resp-table-fixed td {
-#         padding: 8px 10px;
-#         border: 1px solid #ddd;
-#         overflow-wrap: break-word;
-#         text-align: left;
-#         font-size: 14px;
-#     }
-#     .resp-table-fixed th { background-color:#0d1b3d; color:white; }
-#     @media (max-width: 768px) {
-#         .resp-table-fixed th, .resp-table-fixed td { font-size:12px; padding:6px 8px; }
-#     }
-#     @media (max-width: 480px) {
-#         .resp-table-fixed th, .resp-table-fixed td { font-size:11px; padding:4px 6px; }
-#     }
-#     </style>
-# """, unsafe_allow_html=True)
-
-# # Render HTML table
-# table_html = '<table class="resp-table-fixed">'
-# table_html += '<thead><tr>' + ''.join(f'<th>{col}</th>' for col in df.columns) + '</tr></thead>'
-# table_html += '<tbody>'
-# for _, row in df.iterrows():
-#     table_html += '<tr>' + ''.join(f'<td>{row[col]}</td>' for col in df.columns) + '</tr>'
-# table_html += '</tbody></table>'
-# st.markdown(table_html, unsafe_allow_html=True)
-
-# import streamlit as st
-# import pandas as pd
-
-# st.set_page_config(layout="wide", page_title="Responsive Cards + Table Demo")
-
-# st.title("📊 Responsive Cards + Table Demo")
-
-# # ---------- Detect screen width (optional) ----------
-# try:
-#     from streamlit_js_eval import streamlit_js_eval
-#     width = streamlit_js_eval(js_expressions="window.innerWidth", key="SCR_WIDTH")
-# except Exception:
-#     width = None
-
-# if width:
-#     st.write(f"📏 Detected browser width: {width}px")
-
-# # ---------- Global CSS for cards and table ----------
-# st.markdown("""
-# <style>
-# /* ---------- Cards Container ---------- */
-# .cards-wrap {
-#     display: flex;
-#     flex-wrap: wrap;
-#     gap: 16px;
-#     justify-content: flex-start;
-# }
-
-# .card-html {
-#     background: #fff;
-#     border-radius: 12px;
-#     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-#     flex: 0 0 32%; /* desktop: 3 per row */
-#     min-width: 180px;
-#     padding: 12px;
-#     text-align: center;
-#     transition: transform 0.2s ease;
-#     cursor: pointer;
-# }
-# .card-html:hover {
-#     transform: translateY(-6px);
-# }
-
-# /* Card title and text */
-# .card-html h3 {
-#     margin: 8px 0;
-#     font-size: clamp(16px, 1.5vw, 20px);
-# }
-# .card-html p {
-#     margin: 4px 0;
-#     font-size: clamp(13px, 1.1vw, 15px);
-#     color: #333;
-# }
-
-# /* ---------- Responsive Breakpoints ---------- */
-# @media (max-width: 992px) {
-#     .card-html { flex: 0 0 48%; }
-# }
-# @media (max-width: 480px) {
-#     .card-html { flex: 0 0 48%; min-width: 140px; }
-# }
-# @media (max-width: 320px) {
-#     .card-html { flex: 0 0 100%; }
-# }
-
-# /* ---------- Responsive Table ---------- */
-# .resp-table-fixed {
-#     width: 100% !important;
-#     border-collapse: collapse;
-#     table-layout: fixed;
-# }
-# .resp-table-fixed th, .resp-table-fixed td {
-#     padding: 8px 10px;
-#     border: 1px solid #ddd;
-#     overflow-wrap: break-word;
-#     text-align: left;
-#     font-size: 14px;
-# }
-# .resp-table-fixed th { background-color:#0d1b3d; color:white; }
-# @media (max-width: 768px) {
-#     .resp-table-fixed th, .resp-table-fixed td { font-size:12px; padding:6px 8px; }
-# }
-# @media (max-width: 480px) {
-#     .resp-table-fixed th, .resp-table-fixed td { font-size:11px; padding:4px 6px; }
-# }
-# </style>
-# """, unsafe_allow_html=True)
-
-# # ---------- Cards Data ----------
-# cards_data = [
-#     {"title": "Reports", "text": "View latest reports.", "image": "https://placekitten.com/300/200"},
-#     {"title": "Analytics", "text": "Explore charts.", "image": "https://placekitten.com/301/200"},
-#     {"title": "Archives", "text": "Browse files.", "image": "https://placekitten.com/302/200"},
-#     {"title": "Team", "text": "Team stats.", "image": "https://placekitten.com/303/200"},
-#     {"title": "Projects", "text": "Project overview.", "image": "https://placekitten.com/304/200"},
-#     {"title": "Settings", "text": "App configuration.", "image": "https://placekitten.com/305/200"},
-# ]
-
-# # ---------- Render Cards ----------
-# st.subheader("📂 Responsive Cards Section")
-
-# cards_html = '<div class="cards-wrap">'
-# for idx, c in enumerate(cards_data):
-#     cards_html += f'''
-#     <div class="card-html" onclick="window.alert('You clicked: {c["title"]}')">
-#         <h3>{c["title"]}</h3>
-#         <p>{c["text"]}</p>
-#         <img src="{c["image"]}" width="100%" style="border-radius:8px; margin-top:6px;" />
-#     </div>
-#     '''
-# cards_html += '</div>'
-
-# st.markdown(cards_html, unsafe_allow_html=True)
-
-# # ---------- Sample 10-Column Table ----------
-# st.subheader("📋 Responsive 10-Column Table")
-# df = pd.DataFrame({
-#     "ID": [1,2,3,4],
-#     "Name": ["Alice", "Bob", "Charlie", "Diana"],
-#     "Age": [24, 30, 28, 35],
-#     "Department": ["HR", "IT", "Finance", "Marketing"],
-#     "Position": ["Manager", "Developer", "Analyst", "Designer"],
-#     "Location": ["NY", "LA", "Chicago", "Houston"],
-#     "Experience": [5, 7, 3, 6],
-#     "Salary": ["50k", "70k", "45k", "60k"],
-#     "Projects": [3, 5, 2, 4],
-#     "Status": ["Active", "Active", "Inactive", "Active"]
-# })
-
-# table_html = '<table class="resp-table-fixed">'
-# table_html += '<thead><tr>' + ''.join(f'<th>{col}</th>' for col in df.columns) + '</tr></thead>'
-# table_html += '<tbody>'
-# for _, row in df.iterrows():
-#     table_html += '<tr>' + ''.join(f'<td>{row[col]}</td>' for col in df.columns) + '</tr>'
-# table_html += '</tbody></table>'
-
-# st.markdown(table_html, unsafe_allow_html=True)
-
-
-
-
-
+clicked = display_cards(cards, session_key="selected_page")
+if clicked:
+    st.success(f"You clicked: {st.session_state['selected_page']}")
