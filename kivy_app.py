@@ -3,14 +3,48 @@ import streamlit as st
 st.set_page_config(layout="wide", page_title="Responsive Cards Demo")
 
 # ---------- CSS (same as your design) ----------
+# st.markdown("""
+# <style>
+# .cards-wrap {
+#   display: flex;
+#   gap: 12px;
+#   flex-wrap: wrap;
+#   padding: 8px 0;
+# }
+# .card {
+#   background: #fff;
+#   border-radius: 10px;
+#   box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+#   padding: 16px;
+#   min-width: 160px;
+#   flex: 0 0 40%;
+#   transition: transform 0.12s ease;
+#   overflow: hidden;
+# }
+# .card:hover { transform: translateY(-4px); }
+# .card h3 { margin:6px 0; font-size: clamp(16px,1.6vw,20px);}
+# .card p { margin:4px 0; font-size: clamp(13px,1.1vw,15px); color:#333; }
+# @media (max-width:992px){.card{flex:0 0 48%;}}
+# @media (max-width:480px){.card{flex:0 0 48%; padding:10px; min-width:120px;}}
+# @media (max-width:350px){.card{flex:0 0 120%; padding:10px; min-width:120px;}}
+# @media (max-width: 480px){
+#   .cards-wrap {
+#     justify-content: center;  /* center cards horizontally */
+#   }
+# }
+# </style>
+# """, unsafe_allow_html=True)
 st.markdown("""
 <style>
+/* ---------- Container + Cards ---------- */
 .cards-wrap {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
   padding: 8px 0;
+  justify-content: flex-start; /* default for desktop */
 }
+
 .card {
   background: #fff;
   border-radius: 10px;
@@ -21,16 +55,29 @@ st.markdown("""
   transition: transform 0.12s ease;
   overflow: hidden;
 }
+
 .card:hover { transform: translateY(-4px); }
+
 .card h3 { margin:6px 0; font-size: clamp(16px,1.6vw,20px);}
 .card p { margin:4px 0; font-size: clamp(13px,1.1vw,15px); color:#333; }
-@media (max-width:992px){.card{flex:0 0 48%;}}
-@media (max-width:480px){.card{flex:0 0 48%; padding:10px; min-width:120px;}}
-@media (max-width:350px){.card{flex:0 0 120%; padding:10px; min-width:120px;}}
-@media (max-width: 480px){
-  .cards-wrap {
-    justify-content: center;  /* center cards horizontally */
-  }
+
+/* ---------- Responsive Breakpoints ---------- */
+
+/* Tablet (≤992px) */
+@media (max-width:992px){
+  .card { flex: 0 0 48%; }
+}
+
+/* Phones (≤480px) */
+@media (max-width:480px){
+  .cards-wrap { justify-content: center; } /* center cards horizontally */
+  .card { flex: 0 0 48%; padding: 10px; min-width: 120px; }
+}
+
+/* Tiny phones (≤350px) */
+@media (max-width:350px){
+  .cards-wrap { justify-content: center; } /* center the single card */
+  .card { flex: 0 0 100%; padding: 10px; min-width: 120px; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -81,6 +128,7 @@ else:
         st.session_state.clicked_card = None
         st.experimental_set_query_params()
         st.rerun()
+
 
 
 
