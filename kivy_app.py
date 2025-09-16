@@ -148,7 +148,39 @@
 
 import streamlit as st
 
-# Sample products
+# --- JavaScript to detect screen width ---
+screen_width = st.session_state.get("screen_width", None)
+get_width_script = """
+<script>
+    const width = window.innerWidth;
+    var streamlitDoc = window.parent.document;
+    var input = streamlitDoc.querySelector('input#screen-width');
+    if (!input) {
+        input = streamlitDoc.createElement('input');
+        input.id = 'screen-width';
+        input.type = 'hidden';
+        input.value = width;
+        streamlitDoc.body.appendChild(input);
+        input.dispatchEvent(new Event('change'));
+    } else {
+        input.value = width;
+        input.dispatchEvent(new Event('change'));
+    }
+</script>
+"""
+st.markdown(get_width_script, unsafe_allow_html=True)
+
+# Hidden input to capture JS value
+screen_width = st.text_input("Screen Width", key="screen-width", label_visibility="collapsed")
+
+# --- Decide number of columns based on width ---
+try:
+    width = int(screen_width)
+    num_cols = 2 if width <= 350 else 4
+except:
+    num_cols = 4  # default if width not detected
+
+# --- Products ---
 products = [
     {"name": "iGG Black", "price": "UGX 500,000", "img": "https://via.placeholder.com/150"},
     {"name": "iGG RAM 256GB SSD", "price": "UGX 1,200,000", "img": "https://via.placeholder.com/150"},
@@ -156,7 +188,6 @@ products = [
     {"name": "Bluetooth Device", "price": "UGX 150,000", "img": "https://via.placeholder.com/150"},
 ]
 
-# Track cart
 if "cart" not in st.session_state:
     st.session_state.cart = []
 
@@ -164,7 +195,7 @@ def add_to_cart(product):
     st.session_state.cart.append(product)
     st.toast(f"✅ {product['name']} added to cart!")
 
-# --- Custom CSS for nice product cards ---
+# --- Custom CSS for product cards ---
 st.markdown("""
     <style>
     .product-card {
@@ -203,11 +234,11 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# --- Display products in 4 columns ---
-cols = st.columns(4)
+# --- Display products in responsive columns ---
+cols = st.columns(num_cols)
 
 for i, product in enumerate(products):
-    with cols[i % 4]:
+    with cols[i % num_cols]:
         st.markdown(
             f"""
             <div class="product-card">
@@ -220,7 +251,7 @@ for i, product in enumerate(products):
         if st.button("🛒 Add to Cart", key=f"cart_{i}"):
             add_to_cart(product)
 
-# --- Show cart preview ---
+# --- Cart preview ---
 st.markdown("### 🛍️ Your Cart")
 if st.session_state.cart:
     for item in st.session_state.cart:
