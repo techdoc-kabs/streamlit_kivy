@@ -100,113 +100,65 @@ st.set_page_config(layout="wide")
 # ---------- CUSTOM CSS ----------
 st.markdown("""
     <style>
-        /* ---------- Cards ---------- */
+        /* Force columns layout */
+        @media (max-width: 768px) {
+            /* Target Streamlit horizontal block */
+            [data-testid="stHorizontalBlock"] {
+                flex-wrap: wrap !important;        /* allow wrapping */
+                flex-direction: row !important;    /* row, not column */
+                justify-content: space-between;
+            }
+            [data-testid="column"] {
+                min-width: 48% !important;  /* ensure 2 columns fit */
+                flex: 1 1 48% !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            [data-testid="column"] {
+                min-width: 100% !important;  /* fallback to 1 col on tiny screens */
+            }
+        }
+
+        /* Card styling */
         .card {
             background: #f9f9f9;
             border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 15px;
             text-align: center;
-            font-size: 18px;
-            transition: transform 0.2s ease-in-out;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        /* ---------- Tables ---------- */
-        .responsive-table table {
-            width: 100% !important;
-            border-collapse: collapse;
             font-size: 16px;
-        }
-        .responsive-table th, .responsive-table td {
-            padding: 10px;
-            border: 1px solid #ddd;
-        }
-        .responsive-table th {
-            background-color: #0d1b3d;
-            color: white;
-        }
-
-        /* ---------- Responsive behavior ---------- */
-        /* Tablets */
-        @media (max-width: 992px) {
-            .card {
-                font-size: 16px;
-                padding: 15px;
-            }
-            .responsive-table table {
-                font-size: 14px;
-            }
-        }
-
-        /* Phones */
-        @media (max-width: 768px) {
-            [data-testid="stHorizontalBlock"] {
-                flex-direction: row !important; /* keep horizontal */
-                gap: 8px !important;
-            }
-            .card {
-                font-size: 14px;
-                padding: 10px;
-                min-width: 120px;
-            }
-            .responsive-table table {
-                font-size: 13px;
-            }
-        }
-
-        /* Very small phones */
-        @media (max-width: 480px) {
-            .card {
-                font-size: 12px;
-                padding: 8px;
-                min-width: 100px;
-            }
-            .responsive-table table {
-                font-size: 12px;
-            }
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
         }
     </style>
 """, unsafe_allow_html=True)
 
-# ---------- DEMO APP ----------
-
-st.title("📱 Responsive Demo App")
+# ---------- DEMO ----------
+st.title("📱 Responsive Layout with 2 Columns on Mobile")
 
 # --- Cards Section ---
-st.subheader("Cards Section (Responsive)")
+st.subheader("Cards")
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown('<div class="card">📊 <br> Reports</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">Card 1</div>', unsafe_allow_html=True)
 with col2:
-    st.markdown('<div class="card">📈 <br> Analytics</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">Card 2</div>', unsafe_allow_html=True)
 with col3:
-    st.markdown('<div class="card">📂 <br> Archives</div>', unsafe_allow_html=True)
+    st.markdown('<div class="card">Card 3</div>', unsafe_allow_html=True)
 
 # --- Table Section ---
-st.subheader("Responsive Table Example")
-data = {
+st.subheader("Table Example")
+df = pd.DataFrame({
     "Name": ["Alice", "Bob", "Charlie", "Diana"],
     "Age": [24, 30, 28, 35],
-    "Department": ["HR", "IT", "Finance", "Marketing"]
-}
-df = pd.DataFrame(data)
+    "Dept": ["HR", "IT", "Finance", "Marketing"]
+})
+st.dataframe(df, use_container_width=True)
 
-# Render table inside responsive div
-st.markdown('<div class="responsive-table">', unsafe_allow_html=True)
-st.write(df)
-st.markdown('</div>', unsafe_allow_html=True)
-
-# --- Columns with content ---
-st.subheader("Text in Columns")
+# --- Text Columns ---
+st.subheader("Text Columns")
 colA, colB = st.columns(2)
-
 with colA:
-    st.markdown('<div class="card">This is column A content. On mobile, text resizes to fit properly.</div>', unsafe_allow_html=True)
-
+    st.markdown('<div class="card">Left column text</div>', unsafe_allow_html=True)
 with colB:
-    st.markdown('<div class="card">This is column B content. No need for horizontal scrolling.</div>', unsafe_allow_html=True)
-
+    st.markdown('<div class="card">Right column text</div>', unsafe_allow_html=True)
