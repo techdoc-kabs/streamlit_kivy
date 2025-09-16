@@ -5,6 +5,7 @@ streamlit-option-menu
 streamlit-aggrid>=0.5.7
 streamlit-javascript
 requests
+streamlit_js_eval
 
 
 
