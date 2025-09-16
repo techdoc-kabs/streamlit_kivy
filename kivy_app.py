@@ -112,7 +112,7 @@ st.markdown("""
 
 /* Tablet (≤992px) */
 @media (max-width:992px){
-  .card { flex: 0 0 48%; } /* 2 cards per row */
+  .card { flex: 0 0 32%; } /* 2 cards per row */
 }
 
 /* Phones (≤480px) */
@@ -179,6 +179,7 @@ else:
         st.session_state.clicked_card = None
         st.experimental_set_query_params()
         st.rerun()
+
 
 
 
