@@ -1,4 +1,4 @@
-# # app.py
+# # # app.py
 # import streamlit as st
 # import pandas as pd
 
@@ -210,119 +210,227 @@
 # table_html += '</tbody></table>'
 
 # st.markdown(table_html, unsafe_allow_html=True)
+# import streamlit as st
+# import pandas as pd
+# from streamlit_card import card
+# from streamlit_js_eval import streamlit_js_eval
+
+# st.set_page_config(layout="wide")
+# st.title("Responsive Streamlit Cards + Table Demo")
+
+# # ---------- Detect screen width ----------
+# try:
+#     width = streamlit_js_eval(js_expressions="window.innerWidth", key="SCR_WIDTH")
+# except Exception:
+#     width = 768  # fallback width
+
+# st.write(f"📏 Detected screen width: {width}px")
+
+# # ---------- Decide card width dynamically ----------
+# if width >= 992:
+#     card_width = 300
+# elif width >= 481:
+#     card_width = 48  # percent
+# else:
+#     card_width = 90  # percent for tiny phones
+
+# # ---------- Cards Data ----------
+# cards_data = [
+#     {"title": "Reports", "text": "View latest reports.", "image": "https://placekitten.com/300/300"},
+#     {"title": "Analytics", "text": "Explore charts.", "image": "https://placekitten.com/301/300"},
+#     {"title": "Archives", "text": "Browse files.", "image": "https://placekitten.com/302/300"},
+#     {"title": "Team", "text": "Team stats.", "image": "https://placekitten.com/303/300"},
+#     {"title": "Projects", "text": "Project overview.", "image": "https://placekitten.com/304/300"},
+#     {"title": "Settings", "text": "App configuration.", "image": "https://placekitten.com/305/300"},
+# ]
+
+# st.subheader("Clickable Streamlit Cards")
+
+# # ---------- Render streamlit-card components ----------
+# clicked_card = None
+# for idx, c in enumerate(cards_data):
+#     res = card(
+#         title=c["title"],
+#         text=c["text"],
+#         image=c["image"],
+#         styles={
+#             "card": {
+#                 "width": f"{card_width}px" if width >= 992 else f"{card_width}%",
+#                 "height": "300px",
+#                 "border-radius": "20px",
+#                 "box-shadow": "0 0 10px rgba(0,0,0,0.3)",
+#                 "margin": "10px auto",
+#                 "display": "flex",
+#                 "flex-direction": "column",
+#                 "align-items": "center",
+#                 "justify-content": "center",
+#                 "overflow": "hidden"
+#             },
+#             "filter": {"background-color": "rgba(0, 0, 0, 0)"},
+#             "title": {"font-size": "18px"},
+#             "text": {"font-size": "14px"}
+#         }
+#     )
+#     if res:
+#         clicked_card = c["title"]
+
+# if clicked_card:
+#     st.success(f"You clicked on: {clicked_card}!")
+
+# # ---------- Responsive Table Section ----------
+# st.subheader("Responsive 10-Column Table")
+# df = pd.DataFrame({
+#     "ID": [1,2,3,4],
+#     "Name": ["Alice", "Bob", "Charlie", "Diana"],
+#     "Age": [24, 30, 28, 35],
+#     "Department": ["HR", "IT", "Finance", "Marketing"],
+#     "Position": ["Manager", "Developer", "Analyst", "Designer"],
+#     "Location": ["NY", "LA", "Chicago", "Houston"],
+#     "Experience": [5, 7, 3, 6],
+#     "Salary": ["50k", "70k", "45k", "60k"],
+#     "Projects": [3, 5, 2, 4],
+#     "Status": ["Active", "Active", "Inactive", "Active"]
+# })
+
+# # CSS for responsive table
+# st.markdown("""
+#     <style>
+#     .resp-table-fixed {
+#         width: 100% !important;
+#         border-collapse: collapse;
+#         table-layout: fixed;
+#     }
+#     .resp-table-fixed th, .resp-table-fixed td {
+#         padding: 8px 10px;
+#         border: 1px solid #ddd;
+#         overflow-wrap: break-word;
+#         text-align: left;
+#         font-size: 14px;
+#     }
+#     .resp-table-fixed th { background-color:#0d1b3d; color:white; }
+#     @media (max-width: 768px) {
+#         .resp-table-fixed th, .resp-table-fixed td { font-size:12px; padding:6px 8px; }
+#     }
+#     @media (max-width: 480px) {
+#         .resp-table-fixed th, .resp-table-fixed td { font-size:11px; padding:4px 6px; }
+#     }
+#     </style>
+# """, unsafe_allow_html=True)
+
+# # Render HTML table
+# table_html = '<table class="resp-table-fixed">'
+# table_html += '<thead><tr>' + ''.join(f'<th>{col}</th>' for col in df.columns) + '</tr></thead>'
+# table_html += '<tbody>'
+# for _, row in df.iterrows():
+#     table_html += '<tr>' + ''.join(f'<td>{row[col]}</td>' for col in df.columns) + '</tr>'
+# table_html += '</tbody></table>'
+# st.markdown(table_html, unsafe_allow_html=True)
+
 import streamlit as st
-import pandas as pd
 from streamlit_card import card
-from streamlit_js_eval import streamlit_js_eval
+from streamlit_javascript import st_javascript
 
-st.set_page_config(layout="wide")
-st.title("Responsive Streamlit Cards + Table Demo")
+# ---------------- DEVICE ----------------
+def get_device_type(width):
+    try:
+        w = int(width)
+    except (ValueError, TypeError):
+        return "desktop"
+    return "mobile" if w < 704 else "desktop"
 
-# ---------- Detect screen width ----------
-try:
-    width = streamlit_js_eval(js_expressions="window.innerWidth", key="SCR_WIDTH")
-except Exception:
-    width = 768  # fallback width
+device_width = st_javascript("window.innerWidth", key="screen_width") or 1024
+device_type = get_device_type(device_width)
+is_mobile = device_type == "mobile"
 
-st.write(f"📏 Detected screen width: {width}px")
-
-# ---------- Decide card width dynamically ----------
-if width >= 992:
-    card_width = 300
-elif width >= 481:
-    card_width = 48  # percent
-else:
-    card_width = 90  # percent for tiny phones
-
-# ---------- Cards Data ----------
-cards_data = [
-    {"title": "Reports", "text": "View latest reports.", "image": "https://placekitten.com/300/300"},
-    {"title": "Analytics", "text": "Explore charts.", "image": "https://placekitten.com/301/300"},
-    {"title": "Archives", "text": "Browse files.", "image": "https://placekitten.com/302/300"},
-    {"title": "Team", "text": "Team stats.", "image": "https://placekitten.com/303/300"},
-    {"title": "Projects", "text": "Project overview.", "image": "https://placekitten.com/304/300"},
-    {"title": "Settings", "text": "App configuration.", "image": "https://placekitten.com/305/300"},
-]
-
-st.subheader("Clickable Streamlit Cards")
-
-# ---------- Render streamlit-card components ----------
-clicked_card = None
-for idx, c in enumerate(cards_data):
-    res = card(
-        title=c["title"],
-        text=c["text"],
-        image=c["image"],
-        styles={
-            "card": {
-                "width": f"{card_width}px" if width >= 992 else f"{card_width}%",
-                "height": "300px",
-                "border-radius": "20px",
-                "box-shadow": "0 0 10px rgba(0,0,0,0.3)",
-                "margin": "10px auto",
-                "display": "flex",
-                "flex-direction": "column",
-                "align-items": "center",
-                "justify-content": "center",
-                "overflow": "hidden"
-            },
-            "filter": {"background-color": "rgba(0, 0, 0, 0)"},
-            "title": {"font-size": "18px"},
-            "text": {"font-size": "14px"}
-        }
-    )
-    if res:
-        clicked_card = c["title"]
-
-if clicked_card:
-    st.success(f"You clicked on: {clicked_card}!")
-
-# ---------- Responsive Table Section ----------
-st.subheader("Responsive 10-Column Table")
-df = pd.DataFrame({
-    "ID": [1,2,3,4],
-    "Name": ["Alice", "Bob", "Charlie", "Diana"],
-    "Age": [24, 30, 28, 35],
-    "Department": ["HR", "IT", "Finance", "Marketing"],
-    "Position": ["Manager", "Developer", "Analyst", "Designer"],
-    "Location": ["NY", "LA", "Chicago", "Houston"],
-    "Experience": [5, 7, 3, 6],
-    "Salary": ["50k", "70k", "45k", "60k"],
-    "Projects": [3, 5, 2, 4],
-    "Status": ["Active", "Active", "Inactive", "Active"]
-})
-
-# CSS for responsive table
+# ---------------- RESPONSIVE WRAPPER CSS ----------------
 st.markdown("""
-    <style>
-    .resp-table-fixed {
-        width: 100% !important;
-        border-collapse: collapse;
-        table-layout: fixed;
+<style>
+.cards-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.cards-wrap > div {
+    flex: 0 0 48%;  /* 2 columns for mobile by default */
+    min-width: 140px;
+}
+@media (max-width: 320px) {
+    .cards-wrap > div {
+        flex: 0 0 100%; /* fallback to 1 column on tiny phones */
     }
-    .resp-table-fixed th, .resp-table-fixed td {
-        padding: 8px 10px;
-        border: 1px solid #ddd;
-        overflow-wrap: break-word;
-        text-align: left;
-        font-size: 14px;
-    }
-    .resp-table-fixed th { background-color:#0d1b3d; color:white; }
-    @media (max-width: 768px) {
-        .resp-table-fixed th, .resp-table-fixed td { font-size:12px; padding:6px 8px; }
-    }
-    @media (max-width: 480px) {
-        .resp-table-fixed th, .resp-table-fixed td { font-size:11px; padding:4px 6px; }
-    }
-    </style>
+}
+</style>
 """, unsafe_allow_html=True)
 
-# Render HTML table
-table_html = '<table class="resp-table-fixed">'
-table_html += '<thead><tr>' + ''.join(f'<th>{col}</th>' for col in df.columns) + '</tr></thead>'
-table_html += '<tbody>'
-for _, row in df.iterrows():
-    table_html += '<tr>' + ''.join(f'<td>{row[col]}</td>' for col in df.columns) + '</tr>'
-table_html += '</tbody></table>'
-st.markdown(table_html, unsafe_allow_html=True)
+# ---------------- DISPLAY FUNCTION ----------------
+def display_card_menu(options: list, session_key: str, num_cols: int = 4, next_screen=None):
+    """
+    Display clickable cards responsively (flex-wrap on mobile)
+    options: list of dicts {"title":..., "text":...}
+    session_key: session state key for storing clicked option
+    num_cols: desired columns on desktop
+    """
+    # For desktop: native Streamlit columns
+    if not is_mobile:
+        cols = st.columns(num_cols, gap="small")
+        for idx, option in enumerate(options):
+            with cols[idx % num_cols]:
+                clicked = card(
+                    title=option.get("title", ""),
+                    text=option.get("text", ""),
+                    key=f"{session_key}-{option.get('text','')}",
+                    styles={
+                        "card": {
+                            "width": "100%", "height": "200px",
+                            "border-radius": "6px",
+                            "background": "#3498db",
+                            "color": "white",
+                            "box-shadow": "0 4px 12px rgba(0,0,0,0.25)",
+                            "text-align": "center",
+                            "margin": "0px",
+                        },
+                        "text": {"font-size": "18px"},
+                        "title": {"font-size": "30px"},
+                    }
+                )
+                if clicked:
+                    st.session_state[session_key] = option.get("text")
+                    if next_screen:
+                        st.session_state.screen = next_screen
+                    st.session_state["__nav_triggered"] = True
+                    return True
+    else:
+        # For mobile: wrap cards in a flex div
+        st.markdown('<div class="cards-wrap">', unsafe_allow_html=True)
+        for idx, option in enumerate(options):
+            # each card inside a wrapper div
+            st.markdown(f'<div id="card-{idx}">', unsafe_allow_html=True)
+            clicked = card(
+                title=option.get("title", ""),
+                text=option.get("text", ""),
+                key=f"{session_key}-{option.get('text','')}",
+                styles={
+                    "card": {
+                        "width": "100%", "height": "150px",
+                        "border-radius": "6px",
+                        "background": "#3498db",
+                        "color": "white",
+                        "box-shadow": "0 4px 12px rgba(0,0,0,0.25)",
+                        "text-align": "center",
+                        "margin": "0px",
+                    },
+                    "text": {"font-size": "16px"},
+                    "title": {"font-size": "24px"},
+                }
+            )
+            if clicked:
+                st.session_state[session_key] = option.get("text")
+                if next_screen:
+                    st.session_state.screen = next_screen
+                st.session_state["__nav_triggered"] = True
+                return True
+            st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    return False
 
