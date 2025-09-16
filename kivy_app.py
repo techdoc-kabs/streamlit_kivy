@@ -76,8 +76,7 @@ st.markdown("""
 # --- Render Products in Grid ---
 cols_html = '<div class="product-grid">'
 for i, p in enumerate(products):
-    cols_html += f"""
-    <div class="product-card">
+    cols_html += f"""<div class="product-card">
         <img src="{p['img']}" alt="{p['name']}">
         <div class="product-name">{p['name']}</div>
         <div class="product-price">{p['price']} <span class="discount">-{p['discount']}</span></div>
@@ -97,3 +96,4 @@ for i, p in enumerate(products):
             if st.button(f"🛒 Add to Cart", key=f"cart_{i}"):
                 st.session_state.cart.append(p)
                 st.success(f"✅ {p['name']} added to cart!")
+
