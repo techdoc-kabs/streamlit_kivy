@@ -137,8 +137,7 @@ st.markdown("""
 # ---------------- Render cards in HTML wrapper ----------------
 cards_html = '<div class="cards-wrap">'
 for c in cards:
-    cards_html += f'''
-    <div class="card">
+    cards_html += f'''<div class="card">
         <h3>{c["title"]}</h3>
         <p>{c["text"]}</p>
     </div>
