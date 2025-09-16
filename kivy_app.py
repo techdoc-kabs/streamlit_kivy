@@ -143,21 +143,52 @@ cards_html += "</div>"
 st.markdown(cards_html, unsafe_allow_html=True)
 
 # ---------- Responsive Table (HTML) ----------
-st.subheader("Responsive Table (becomes stacked rows on small screens)")
+st.title("Responsive Table (columns fit screen)")
+
+# Sample DataFrame
 df = pd.DataFrame({
     "Name": ["Alice", "Bob", "Charlie", "Diana"],
     "Age": [24, 30, 28, 35],
-    "Dept": ["HR", "IT", "Finance", "Marketing"]
+    "Department": ["HR", "IT", "Finance", "Marketing"],
+    "Position": ["Manager", "Developer", "Analyst", "Designer"]
 })
 
-def df_to_responsive_table(df: pd.DataFrame) -> str:
-    thead = "<thead><tr>" + "".join(f"<th>{col}</th>" for col in df.columns) + "</tr></thead>"
-    rows = ""
-    for _, row in df.iterrows():
-        rows += "<tr>" + "".join(f'<td data-label="{col}">{row[col]}</td>' for col in df.columns) + "</tr>"
-    return f'<table class="resp-table">{thead}<tbody>{rows}</tbody></table>'
+# CSS for responsive table (fits screen)
+st.markdown("""
+    <style>
+    .resp-table-fixed {
+        width: 100% !important;
+        border-collapse: collapse;
+        table-layout: fixed; /* ensures columns shrink to fit */
+    }
+    .resp-table-fixed th, .resp-table-fixed td {
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        overflow-wrap: break-word; /* wrap long content */
+        text-align: left;
+        font-size: 14px;
+    }
+    .resp-table-fixed th {
+        background-color: #0d1b3d;
+        color: white;
+    }
 
-st.markdown(df_to_responsive_table(df), unsafe_allow_html=True)
+    /* Optional: smaller font on mobile */
+    @media (max-width: 768px) {
+        .resp-table-fixed th, .resp-table-fixed td {
+            font-size: 12px;
+            padding: 6px 8px;
+        }
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-st.markdown("---")
-st.caption("Behavior: desktop shows 3-per-row; tablets & phones show 2-per-row down to 321px; ≤320px falls back to 1-per-row.")
+# Render table as HTML
+table_html = '<table class="resp-table-fixed">'
+table_html += '<thead><tr>' + ''.join(f'<th>{col}</th>' for col in df.columns) + '</tr></thead>'
+table_html += '<tbody>'
+for _, row in df.iterrows():
+    table_html += '<tr>' + ''.join(f'<td>{row[col]}</td>' for col in df.columns) + '</tr>'
+table_html += '</tbody></table>'
+
+st.markdown(table_html, unsafe_allow_html=True)
