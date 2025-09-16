@@ -26,7 +26,7 @@ st.markdown("""
 .card p { margin:4px 0; font-size: clamp(13px,1.1vw,15px); color:#333; }
 @media (max-width:992px){.card{flex:0 0 48%;}}
 @media (max-width:480px){.card{flex:0 0 48%; padding:10px; min-width:120px;}}
-@media (max-width:320px){.card{flex:0 0 100%;}}
+@media (max-width:320px){.card{flex:0 0 100%; padding:10px; min-width:120px;}}
 </style>
 """, unsafe_allow_html=True)
 
@@ -76,3 +76,4 @@ else:
         st.session_state.clicked_card = None
         st.experimental_set_query_params()
         st.rerun()
+
