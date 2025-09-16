@@ -143,17 +143,27 @@ cards_html += "</div>"
 st.markdown(cards_html, unsafe_allow_html=True)
 
 # ---------- Responsive Table (HTML) ----------
-st.title("Responsive Table (columns fit screen)")
+import streamlit as st
+import pandas as pd
 
-# Sample DataFrame
+st.set_page_config(layout="wide")
+st.title("Responsive Table with 10 Columns (auto-fit)")
+
+# Sample DataFrame with 10 columns
 df = pd.DataFrame({
-    "Name": ["Alice", "Bob", "Charlie", "Diana","kimera", "peter", "robert"],
-    "Age": [24, 30, 28, 35, 36, 37, 38],
-    "Department": ["HR", "IT", "Finance", "Marketing", "computing", "biology", "Agriculture"],
-    "Position": ["Manager", "Developer", "Analyst", "Designer", "Developer", "Analyst", "Designer"]
+    "ID": [1,2,3,4],
+    "Name": ["Alice", "Bob", "Charlie", "Diana"],
+    "Age": [24, 30, 28, 35],
+    "Department": ["HR", "IT", "Finance", "Marketing"],
+    "Position": ["Manager", "Developer", "Analyst", "Designer"],
+    "Location": ["NY", "LA", "Chicago", "Houston"],
+    "Experience": [5, 7, 3, 6],
+    "Salary": ["50k", "70k", "45k", "60k"],
+    "Projects": [3, 5, 2, 4],
+    "Status": ["Active", "Active", "Inactive", "Active"]
 })
 
-# CSS for responsive table (fits screen)
+# CSS for responsive table
 st.markdown("""
     <style>
     .resp-table-fixed {
@@ -173,11 +183,19 @@ st.markdown("""
         color: white;
     }
 
-    /* Optional: smaller font on mobile */
+    /* Smaller font on mobile */
     @media (max-width: 768px) {
         .resp-table-fixed th, .resp-table-fixed td {
             font-size: 12px;
             padding: 6px 8px;
+        }
+    }
+
+    /* Very small phones */
+    @media (max-width: 480px) {
+        .resp-table-fixed th, .resp-table-fixed td {
+            font-size: 11px;
+            padding: 4px 6px;
         }
     }
     </style>
@@ -192,5 +210,3 @@ for _, row in df.iterrows():
 table_html += '</tbody></table>'
 
 st.markdown(table_html, unsafe_allow_html=True)
-
-
