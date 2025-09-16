@@ -71,77 +71,159 @@
 # if clicked:
 #     st.success(f"You clicked: {st.session_state['selected_page']}")
 
+# import streamlit as st
+
+# # Example cards
+# cards = [
+#     {"title": "🗓️", "text": "Schedules"},
+#     {"title": "📚", "text": "Reports"},
+#     {"title": "📈", "text": "Analysis"},
+#     {"title": "📧", "text": "Messages"},
+#     {"title": "🗃️", "text": "Files"},
+#     {"title": "🗄️", "text": "Resources"},
+# ]
+
+# # ---------------- Responsive CSS wrapper ----------------
+# st.markdown("""
+# <style>
+# .cards-wrap {
+#     display: flex;
+#     flex-wrap: wrap;
+#     gap: 8px;
+#     margin: 0;
+#     padding: 0;
+#     box-sizing: border-box;
+# }
+# .card {
+#     flex: 0 0 calc(25% - 8px);  /* default 4 columns for large screens */
+#     min-width: 120px;
+#     background: #3498db;
+#     color: white;
+#     height: 150px;
+#     display: flex;
+#     flex-direction: column;
+#     align-items: center;
+#     justify-content: center;
+#     border-radius: 8px;
+#     text-align: center;
+#     box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+# }
+
+# /* Medium screens: 3 columns */
+# @media (max-width: 704px) {
+#     .card {
+#         flex: 0 0 calc(33.33% - 8px);
+#     }
+# }
+
+# /* Small screens (mobile): 2 columns */
+# @media (max-width: 320px) {
+#     .card {
+#         flex: 0 0 calc(50% - 6px);
+#     }
+# }
+
+# .card h3 {
+#     font-size: 1.5em;
+#     margin: 4px 0;
+# }
+# .card p {
+#     font-size: 1em;
+#     margin: 0;
+# }
+# </style>
+# """, unsafe_allow_html=True)
+
+# # ---------------- Render cards in HTML wrapper ----------------
+# cards_html = '<div class="cards-wrap">'
+# for c in cards:
+#     cards_html += f'''<div class="card">
+#         <h3>{c["title"]}</h3>
+#         <p>{c["text"]}</p>
+#     </div>
+#     '''
+# cards_html += '</div>'
+
+# st.markdown(cards_html, unsafe_allow_html=True)
+
 import streamlit as st
 
-# Example cards
-cards = [
-    {"title": "🗓️", "text": "Schedules"},
-    {"title": "📚", "text": "Reports"},
-    {"title": "📈", "text": "Analysis"},
-    {"title": "📧", "text": "Messages"},
-    {"title": "🗃️", "text": "Files"},
-    {"title": "🗄️", "text": "Resources"},
+# Sample products
+products = [
+    {"name": "iGG Black", "price": "UGX 500,000", "img": "https://via.placeholder.com/150"},
+    {"name": "iGG RAM 256GB SSD", "price": "UGX 1,200,000", "img": "https://via.placeholder.com/150"},
+    {"name": "Nice Chandelier", "price": "UGX 260,000", "img": "https://via.placeholder.com/150"},
+    {"name": "Bluetooth Device", "price": "UGX 150,000", "img": "https://via.placeholder.com/150"},
 ]
 
-# ---------------- Responsive CSS wrapper ----------------
+# Track cart
+if "cart" not in st.session_state:
+    st.session_state.cart = []
+
+def add_to_cart(product):
+    st.session_state.cart.append(product)
+    st.toast(f"✅ {product['name']} added to cart!")
+
+# --- Custom CSS for nice product cards ---
 st.markdown("""
-<style>
-.cards-wrap {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-.card {
-    flex: 0 0 calc(25% - 8px);  /* default 4 columns for large screens */
-    min-width: 120px;
-    background: #3498db;
-    color: white;
-    height: 150px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-}
-
-/* Medium screens: 3 columns */
-@media (max-width: 704px) {
-    .card {
-        flex: 0 0 calc(33.33% - 8px);
+    <style>
+    .product-card {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        padding: 15px;
+        text-align: center;
+        margin: 10px;
     }
-}
-
-/* Small screens (mobile): 2 columns */
-@media (max-width: 320px) {
-    .card {
-        flex: 0 0 calc(50% - 6px);
+    .product-card img {
+        width: 100%;
+        border-radius: 10px;
+        margin-bottom: 10px;
     }
-}
-
-.card h3 {
-    font-size: 1.5em;
-    margin: 4px 0;
-}
-.card p {
-    font-size: 1em;
-    margin: 0;
-}
-</style>
+    .product-name {
+        font-weight: 600;
+        font-size: 16px;
+        margin-bottom: 5px;
+    }
+    .product-price {
+        color: #e67e22;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    .stButton button {
+        width: 100%;
+        background: #f39c12;
+        color: white;
+        border-radius: 8px;
+        font-weight: bold;
+    }
+    .stButton button:hover {
+        background: #e67e22;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
-# ---------------- Render cards in HTML wrapper ----------------
-cards_html = '<div class="cards-wrap">'
-for c in cards:
-    cards_html += f'''<div class="card">
-        <h3>{c["title"]}</h3>
-        <p>{c["text"]}</p>
-    </div>
-    '''
-cards_html += '</div>'
+# --- Display products in 4 columns ---
+cols = st.columns(4)
 
-st.markdown(cards_html, unsafe_allow_html=True)
+for i, product in enumerate(products):
+    with cols[i % 4]:
+        st.markdown(
+            f"""
+            <div class="product-card">
+                <img src="{product['img']}" alt="{product['name']}">
+                <div class="product-name">{product['name']}</div>
+                <div class="product-price">{product['price']}</div>
+            </div>
+            """, unsafe_allow_html=True
+        )
+        if st.button("🛒 Add to Cart", key=f"cart_{i}"):
+            add_to_cart(product)
+
+# --- Show cart preview ---
+st.markdown("### 🛍️ Your Cart")
+if st.session_state.cart:
+    for item in st.session_state.cart:
+        st.write(f"- {item['name']} ({item['price']})")
+else:
+    st.info("Your cart is empty.")
