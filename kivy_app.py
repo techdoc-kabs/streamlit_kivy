@@ -117,7 +117,7 @@ st.markdown("""
 
 /* Phones (≤480px) */
 @media (max-width:480px){
-  .cards-wrap { justify-content: space-around; } /* evenly distribute cards */
+  .cards-wrap { justify-content: center } /* evenly distribute cards */
   .card { flex: 0 0 48%; padding: 10px; min-width: 140px; }
   .card h3 { font-size: 18px; }
   .card p { font-size: 15px; }
@@ -179,6 +179,7 @@ else:
         st.session_state.clicked_card = None
         st.experimental_set_query_params()
         st.rerun()
+
 
 
 
