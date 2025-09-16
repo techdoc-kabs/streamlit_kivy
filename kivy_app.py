@@ -604,7 +604,7 @@ def find_card(title):
 #     if st.button("⬅ Back"):
 #         st.session_state.nav_stack.pop()  # go back
 #         st.rerun()
-if not current_level:
+# if not current_level:
     # Main menu
     # st.title("Main Menu")
     # st.markdown(get_cards_html(cards), unsafe_allow_html=True)
@@ -665,6 +665,7 @@ else:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()  # go back
         st.rerun()
+
 
 
 
