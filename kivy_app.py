@@ -15,7 +15,7 @@ st.markdown("""
 }
 
 .card {
-  background: #fff;
+  background: red;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0,0,0,0.06);
   padding: 16px;
@@ -101,6 +101,7 @@ else:
         st.session_state.clicked_card = None
         st.experimental_set_query_params()
         st.rerun()
+
 
 
 
