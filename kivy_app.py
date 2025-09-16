@@ -17,7 +17,7 @@ st.markdown("""
   box-shadow: 0 2px 10px rgba(0,0,0,0.06);
   padding: 16px;
   min-width: 160px;
-  flex: 0 0 32%;
+  flex: 0 0 40%;
   transition: transform 0.12s ease;
   overflow: hidden;
 }
@@ -76,5 +76,6 @@ else:
         st.session_state.clicked_card = None
         st.experimental_set_query_params()
         st.rerun()
+
 
 
