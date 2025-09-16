@@ -613,7 +613,30 @@ if not current_level:
     # st.title("Main Menu")
 
     # ---------- Introductory image ----------
-    st.image("paul.jpg", use_column_width=True)  # responsive width
+    # st.image("paul.jpg", use_column_width=True)  # responsive width
+
+    # Display cards
+    # st.markdown(get_cards_html(cards), unsafe_allow_html=True)
+if not current_level:
+    st.title("Main Menu")
+
+    # ---------- Responsive intro image ----------
+    st.markdown("""
+    <style>
+    .intro-img {
+        width: 100%;              /* full width, responsive */
+        max-height: 300px;        /* max height for desktop */
+        object-fit: cover;        /* crop/scale nicely */
+        border-radius: 10px;      /* optional, match card style */
+    }
+    @media (max-width: 480px) {
+        .intro-img {
+            max-height: 180px;    /* smaller height for phones */
+        }
+    }
+    </style>
+    <img src="paul.jpg" class="intro-img">
+    """, unsafe_allow_html=True)
 
     # Display cards
     st.markdown(get_cards_html(cards), unsafe_allow_html=True)
@@ -642,6 +665,7 @@ else:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()  # go back
         st.rerun()
+
 
 
 
