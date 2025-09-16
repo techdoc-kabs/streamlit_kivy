@@ -120,8 +120,9 @@ if use_native_columns:
         st.write("Description C")
     st.markdown("---")
 
-# ------------- Option B: Custom HTML Container for cards (mobile-friendly) -------------
-st.subheader("Cards (custom container — controlled by our CSS)")
+
+
+# # Cards data
 cards = [
     {"title": "Reports", "body": "Summary of the most recent reports and KPIs."},
     {"title": "Analytics", "body": "Interactive charts and trends overview."},
@@ -129,80 +130,32 @@ cards = [
     {"title": "Team", "body": "Quick team stats and availability."}
 ]
 
-# Build HTML for cards
-cards_html = '<div class="cards-wrap">'
-for c in cards:
-    cards_html += f'''<div class="card">
-        <h3>{c["title"]}</h3>
-        <p>{c["body"]}</p>
-      </div>
-    '''
-cards_html += "</div>"
+# ---------- Detect clicked card ----------
+query_params = st.experimental_get_query_params()
+clicked_card = query_params.get("nav", [None])[0]
 
-st.markdown(cards_html, unsafe_allow_html=True)
+# ---------- Page Routing ----------
+if not clicked_card:
+    # Show card menu
+    st.title("Responsive Cards Menu")
+    cards_html = '<div class="cards-wrap">'
+    for c in cards:
+        cards_html += f'''<a href="/?nav={c["title"].lower()}" target="_self" style="text-decoration:none; color:inherit; flex:0 0 32%;">
+            <div class="card">
+                <h3>{c["title"]}</h3>
+                <p>{c["body"]}</p>
+            </div>
+        </a>
+        '''
+    cards_html += "</div>"
+    st.markdown(cards_html, unsafe_allow_html=True)
 
-# ---------- Responsive Table (HTML) ----------
-
-st.title("Responsive Table with 10 Columns (auto-fit)")
-
-# Sample DataFrame with 10 columns
-df = pd.DataFrame({
-    "ID": [1,2,3,4],
-    "Name": ["Alice", "Bob", "Charlie", "Diana"],
-    "Age": [24, 30, 28, 35],
-    "Department": ["HR", "IT", "Finance", "Marketing"],
-    "Position": ["Manager", "Developer", "Analyst", "Designer"],
-    "Location": ["NY", "LA", "Chicago", "Houston"],
-    "Experience": [5, 7, 3, 6],
-    "Salary": ["50k", "70k", "45k", "60k"],
-    "Projects": [3, 5, 2, 4],
-    "Status": ["Active", "Active", "Inactive", "Active"]
-})
-
-# CSS for responsive table
-st.markdown("""
-    <style>
-    .resp-table-fixed {
-        width: 100% !important;
-        border-collapse: collapse;
-        table-layout: fixed; /* ensures columns shrink to fit */
-    }
-    .resp-table-fixed th, .resp-table-fixed td {
-        padding: 8px 10px;
-        border: 1px solid #ddd;
-        overflow-wrap: break-word; /* wrap long content */
-        text-align: left;
-        font-size: 14px;
-    }
-    .resp-table-fixed th {
-        background-color: #0d1b3d;
-        color: white;
-    }
-
-    /* Smaller font on mobile */
-    @media (max-width: 768px) {
-        .resp-table-fixed th, .resp-table-fixed td {
-            font-size: 12px;
-            padding: 6px 8px;
-        }
-    }
-
-    /* Very small phones */
-    @media (max-width: 480px) {
-        .resp-table-fixed th, .resp-table-fixed td {
-            font-size: 11px;
-            padding: 4px 6px;
-        }
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-# Render table as HTML
-table_html = '<table class="resp-table-fixed">'
-table_html += '<thead><tr>' + ''.join(f'<th>{col}</th>' for col in df.columns) + '</tr></thead>'
-table_html += '<tbody>'
-for _, row in df.iterrows():
-    table_html += '<tr>' + ''.join(f'<td>{row[col]}</td>' for col in df.columns) + '</tr>'
-table_html += '</tbody></table>'
-
-st.markdown(table_html, unsafe_allow_html=True)
+else:
+    # Show detail page for the clicked card
+    st.title(f"{clicked_card.title()} Page")
+    st.write(f"This is the detailed view for **{clicked_card.title()}**.")
+    # Back link
+    st.markdown(
+        '<a href="/" target="_self" style="text-decoration:none; color:#4CAF50;">⬅ Back to Menu</a>',
+        unsafe_allow_html=True,
+    )
