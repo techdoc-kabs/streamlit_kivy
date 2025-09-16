@@ -468,44 +468,42 @@ from streamlit_card import card
 from streamlit_javascript import st_javascript
 
 # ---------------- DEVICE DETECTION ----------------
-def get_device_type(width):
-    try:
-        w = int(width)
-    except (ValueError, TypeError):
-        return "desktop"
-    return "mobile" if w < 320 else "desktop"
-
 device_width = st_javascript("window.innerWidth", key="screen_width") or 1024
-device_type = get_device_type(device_width)
-is_mobile = device_type == "mobile"
+is_mobile = device_width < 704  # mobile if width < 704px
 
 # ---------------- RESPONSIVE CSS ----------------
 st.markdown("""
 <style>
 .cards-wrap {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: wrap;       /* allow cards to wrap */
     gap: 12px;
+    padding: 0;
+    margin: 0;
+    justify-content: flex-start;
+    box-sizing: border-box;
 }
 .cards-wrap > div {
-    flex: 0 0 48%;  /* 2 columns for mobile */
+    flex: 0 0 48%;         /* two cards per row */
     min-width: 140px;
+    box-sizing: border-box;
 }
 @media (max-width: 320px) {
     .cards-wrap > div {
-        flex: 0 0 100%; /* 1 column for tiny screens */
+        flex: 0 0 48%;      /* still force two columns for tiny phones */
+        min-width: 48%;
     }
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ---------------- DISPLAY FUNCTION ----------------
-def display_card_menu(options: list, session_key: str, num_cols: int = 4, next_screen=None):
+def display_card_menu(options: list, session_key: str, next_screen=None):
     if not is_mobile:
-        # Desktop: use native Streamlit columns
-        cols = st.columns(num_cols, gap="small")
+        # Desktop: native columns
+        cols = st.columns(4, gap="small")
         for idx, option in enumerate(options):
-            with cols[idx % num_cols]:
+            with cols[idx % 4]:
                 clicked = card(
                     title=option.get("title", ""),
                     text=option.get("text", ""),
@@ -533,7 +531,7 @@ def display_card_menu(options: list, session_key: str, num_cols: int = 4, next_s
         # Mobile: flex-wrap container
         st.markdown('<div class="cards-wrap">', unsafe_allow_html=True)
         for idx, option in enumerate(options):
-            st.markdown(f'<div id="card-{idx}">', unsafe_allow_html=True)
+            st.markdown(f'<div>', unsafe_allow_html=True)
             clicked = card(
                 title=option.get("title", ""),
                 text=option.get("text", ""),
@@ -564,7 +562,6 @@ def display_card_menu(options: list, session_key: str, num_cols: int = 4, next_s
 # ---------------- APP ----------------
 st.title("Responsive Card Menu Example")
 
-# Initialize session state
 if "screen" not in st.session_state:
     st.session_state["screen"] = "main_menu"
 
@@ -581,4 +578,6 @@ clicked = display_card_menu(options, session_key="selected_page")
 
 if clicked:
     st.success(f"You clicked: {st.session_state['selected_page']}")
+
+
 
