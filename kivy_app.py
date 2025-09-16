@@ -147,10 +147,10 @@ st.title("Responsive Table (columns fit screen)")
 
 # Sample DataFrame
 df = pd.DataFrame({
-    "Name": ["Alice", "Bob", "Charlie", "Diana"],
-    "Age": [24, 30, 28, 35],
-    "Department": ["HR", "IT", "Finance", "Marketing"],
-    "Position": ["Manager", "Developer", "Analyst", "Designer"]
+    "Name": ["Alice", "Bob", "Charlie", "Diana","kimera", "peter", "robert"],
+    "Age": [24, 30, 28, 35, 36, 37, 38],
+    "Department": ["HR", "IT", "Finance", "Marketing", 'computing", "biology", "Agriculture"],
+    "Position": ["Manager", "Developer", "Analyst", "Designer", "Developer", "Analyst", "Designer"]
 })
 
 # CSS for responsive table (fits screen)
@@ -192,3 +192,4 @@ for _, row in df.iterrows():
 table_html += '</tbody></table>'
 
 st.markdown(table_html, unsafe_allow_html=True)
+
