@@ -117,18 +117,18 @@ st.markdown("""
 
 /* Phones (≤480px) */
 @media (max-width:480px){
-  .cards-wrap { justify-content: center; } /* center cards */
-  .card { flex: 0 0 90%; padding: 16px; min-width: 200px; }
-  .card h3 { font-size: 18px; }
-  .card p { font-size: 15px; }
+  .cards-wrap { justify-content: space-around; } /* evenly distribute cards */
+  .card { flex: 0 0 48%; padding: 14px; min-width: 140px; }
+  .card h3 { font-size: 16px; }
+  .card p { font-size: 14px; }
 }
 
 /* Tiny phones (≤350px) */
 @media (max-width:350px){
-  .cards-wrap { justify-content: center; } /* center cards */
-  .card { flex: 0 0 95%; padding: 14px; min-width: 180px; }
-  .card h3 { font-size: 16px; }
-  .card p { font-size: 14px; }
+  .cards-wrap { justify-content: space-around; }
+  .card { flex: 0 0 48%; padding: 12px; min-width: 120px; }
+  .card h3 { font-size: 15px; }
+  .card p { font-size: 13px; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -179,6 +179,7 @@ else:
         st.session_state.clicked_card = None
         st.experimental_set_query_params()
         st.rerun()
+
 
 
 
