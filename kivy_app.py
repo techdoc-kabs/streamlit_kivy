@@ -13,9 +13,9 @@ else:
 
 # --- Decide number of columns dynamically ---
 if width is None or width >= 992:
-    cols = st.columns(5)
-elif width >= 481:
     cols = st.columns(3)
+elif width >= 481:
+    cols = st.columns(2)
 else:
     cols = st.columns(2)
 
@@ -23,12 +23,9 @@ with cols[0]:
     st.markdown("### Card 1\nContent here...")
 with cols[1]:
     st.markdown("### Card 2\nContent here...")
-with cols[2]:
-    st.markdown("### Card 3\nContent here...")
-
-if len(cols) == 4:
+if len(cols) == 3:
     with cols[2]:
-        st.markdown("### Card 4\nContent here...")
+        st.markdown("### Card 3\nContent here...")
 
 # --- Responsive Table ---
 df = pd.DataFrame({
