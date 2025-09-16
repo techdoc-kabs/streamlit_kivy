@@ -1163,7 +1163,7 @@ def find_card(title):
     # st.markdown(get_cards_html(cards), unsafe_allow_html=True)
 if not current_level:
     # Path to image
-    img_path = os.path.join("images", "std.jpg")
+    img_path = os.path.join("paul.jpg")
 
     # Encode image to base64
     with open(img_path, "rb") as f:
@@ -1219,6 +1219,7 @@ else:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()  # go back
         st.rerun()
+
 
 
 
