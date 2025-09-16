@@ -1116,6 +1116,12 @@ def get_cards_html(cards_list):
 import os
 import base64
 
+img_path = os.path.join("images", "std.jpg")
+
+# Encode image to base64
+with open(img_path, "rb") as f:
+    img_bytes = f.read()
+img_b64 = base64.b64encode(img_bytes).decode()
 
 # ---------- Helper to find card ----------
 def find_card(title):
@@ -1162,37 +1168,116 @@ def find_card(title):
     # Display cards
     # st.markdown(get_cards_html(cards), unsafe_allow_html=True)
 if not current_level:
-    # Path to image
-    img_path = os.path.join("paul.jpg")
+#     # Path to image
+#     img_path = os.path.join("images", "std.jpg")
 
-    # Encode image to base64
-    with open(img_path, "rb") as f:
-        img_bytes = f.read()
-    img_b64 = base64.b64encode(img_bytes).decode()
+#     # Encode image to base64
+#     with open(img_path, "rb") as f:
+#         img_bytes = f.read()
+#     img_b64 = base64.b64encode(img_bytes).decode()
 
-    # Inject CSS with image as background
+#     # Inject CSS with image as background
+#     st.markdown(f"""
+#     <style>
+#     .intro-img {{
+#         background-image: url("data:image/jpg;base64,{img_b64}");
+#         background-size: cover;
+#         background-position: center;
+#         width: 50%;
+#         height: px;  /* desktop height */
+#         border-radius: 10px;
+#         margin-bottom: 20px;
+#     }}
+#     @media (max-width:480px) {{
+#         .intro-img {{
+#             height: 180px;  /* mobile height */
+#         }}
+#     }}
+#     </style>
+
+#     <div class="intro-img"></div>
+#     """, unsafe_allow_html=True)
+
+#         # Display cards
+#     st.markdown(get_cards_html(cards), unsafe_allow_html=True)
+
+
+# CSS with controlled position
+    # st.markdown(f"""
+    # <style>
+    # .intro-img {{
+    #     background-image: url("data:image/jpg;base64,{img_b64}");
+    #     background-size: cover;
+    #     background-position: center;
+    #     width: 200px;       /* width of the image */
+    #     height: 150px;      /* height of the image */
+    #     border-radius: 10px;
+    #     position: absolute; /* absolute positioning */
+    #     top: 10px;          /* distance from top */
+    #     right: 10px;        /* distance from right */
+    #     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    # }}
+    # @media (max-width:480px) {{
+    #     .intro-img {{
+    #         width: 300px;
+    #         height: 100px;
+    #         top: 0px;
+    #         right: 20px;
+    #     }}
+    # }}
+    # </style>
+
+    # <div class="intro-img"></div>
+    # """, unsafe_allow_html=True)
     st.markdown(f"""
     <style>
-    .intro-img {{
+    .top-banner {{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        background: #f8f9fa;
+        border-radius: 12px;
+        padding: 16px;
+        align-items: center;
+        margin-bottom: 24px;
+    }}
+    .banner-img {{
+        flex: 0 0 40%;
+        max-width: 40%;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         background-image: url("data:image/jpg;base64,{img_b64}");
         background-size: cover;
         background-position: center;
-        width: 50%;
-        height: 300px;  /* desktop height */
-        border-radius: 10px;
-        margin-bottom: 20px;
+        height: 200px;
     }}
-    @media (max-width:480px) {{
-        .intro-img {{
-            height: 180px;  /* mobile height */
+    .banner-text {{
+        flex: 1;
+        font-family: Arial, sans-serif;
+        color: #333;
+        padding: 8px 16px;
+    }}
+    @media (max-width: 768px) {{
+        .banner-img, .banner-text {{
+            flex: 0 0 100%;
+            max-width: 100%;
+            height: 180px;
+        }}
+        .banner-text {{
+            padding: 8px 0;
         }}
     }}
     </style>
 
-    <div class="intro-img"></div>
+    <div class="top-banner">
+        <div class="banner-img"></div>
+        <div class="banner-text">
+            <h2>Welcome to the Dashboard</h2>
+            <p>This is your introductory image and description section. It adjusts perfectly on PC and mobile screens, keeping the layout clean and readable.</p>
+        </div>
+    </div>
     """, unsafe_allow_html=True)
 
-        # Display cards
     st.markdown(get_cards_html(cards), unsafe_allow_html=True)
 
 
@@ -1219,7 +1304,6 @@ else:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()  # go back
         st.rerun()
-
 
 
 
