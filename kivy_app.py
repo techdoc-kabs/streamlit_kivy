@@ -1116,7 +1116,7 @@ def get_cards_html(cards_list):
 import os
 import base64
 
-img_path = os.path.join("images", "std.jpg")
+img_path = os.path.join("paul.jpg")
 
 # Encode image to base64
 with open(img_path, "rb") as f:
@@ -1304,6 +1304,7 @@ else:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()  # go back
         st.rerun()
+
 
 
 
