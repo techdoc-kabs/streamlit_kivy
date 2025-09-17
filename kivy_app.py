@@ -1,141 +1,133 @@
 import streamlit as st
-from streamlit_js_eval import streamlit_js_eval
 from streamlit_card import card
+from streamlit_js_eval import streamlit_js_eval
 
 # -------------------------------
-# Card colors for PC cards
+# Demo cards
 # -------------------------------
-CARD_COLORS = [
-    "linear-gradient(135deg, #1abc9c, #16a085)",
-    "linear-gradient(135deg, #3498db, #2980b9)",
-    "linear-gradient(135deg, #9b59b6, #8e44ad)",
-    "linear-gradient(135deg, #e67e22, #d35400)",
-    "linear-gradient(135deg, #e74c3c, #c0392b)",
-    "linear-gradient(135deg, #f39c12, #f1c40f)",
+cards = [
+    {"title": "Reports", "body": "Summary of recent reports.", "submenu": ["Financial", "Activity"]},
+    {"title": "Analytics", "body": "Interactive charts.", "submenu": []},
+    {"title": "Archives", "body": "Browse archived documents.", "submenu": []},
+    {"title": "Team", "body": "Quick team stats.", "submenu": []}
 ]
 
 # -------------------------------
-# Detect screen width
+# Navigation state
+# -------------------------------
+if "nav_stack" not in st.session_state:
+    st.session_state.nav_stack = []
+
+# -------------------------------
+# Device detection
 # -------------------------------
 try:
     width = streamlit_js_eval(js_expressions="window.innerWidth", key="SCR_DETECT")
 except Exception:
-    width = None
-
-LARGE_SCREEN_THRESHOLD = 992  # px
-use_native_columns = width is not None and width >= LARGE_SCREEN_THRESHOLD
+    width = 1024
+is_pc = width >= 992
 
 # -------------------------------
-# Global CSS for HTML cards (mobile fallback)
+# Global CSS for mobile cards
 # -------------------------------
-st.markdown(
-    """
-    <style>
-    .cards-wrap {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: flex-start;
-      padding: 8px 0;
-    }
-    .card {
-      background: #ffffff;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-      padding: 16px;
-      min-width: 160px;
-      flex: 0 0 32%;
-      box-sizing: border-box;
-      transition: transform 0.12s ease;
-      overflow: hidden;
-      cursor: pointer;
-    }
-    .card:hover { transform: translateY(-4px); }
-    .card h3 { margin: 6px 0; font-size: clamp(16px, 1.6vw, 20px); }
-    .card p { margin: 4px 0; font-size: clamp(13px, 1.1vw, 15px); color:#333; }
-
-    @media (max-width: 992px) { .card { flex: 0 0 48%; } }
-    @media (max-width: 768px) { .card { flex: 0 0 48%; padding: 12px; min-width: 140px; } }
-    @media (max-width: 480px) { .card { flex: 0 0 48%; padding: 10px; min-width: 120px; } }
-    @media (max-width: 320px) { .card { flex: 0 0 100%; min-width: 100%; } }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
-
-st.title("Hybrid Responsive Cards Example")
+st.markdown("""
+<style>
+.cards-wrap { display: flex; gap: 12px; flex-wrap: wrap; padding:8px 0; justify-content:flex-start; }
+.card { background:#fff; border-radius:10px; box-shadow:0 2px 10px rgba(0,0,0,0.06); padding:16px; min-width:160px; flex:0 0 32%; transition: transform 0.12s ease; overflow:hidden; cursor:pointer; }
+.card:hover { transform: translateY(-4px); }
+.card h3 { margin:6px 0; font-size:clamp(16px,1.6vw,20px); }
+.card p { margin:4px 0; font-size:clamp(13px,1.1vw,15px); color:#333; }
+@media (max-width:992px){ .card{ flex:0 0 48%; } }
+@media (max-width:480px){ .cards-wrap{ justify-content: space-around; } .card{ flex:0 0 48%; padding:14px; min-width:140px;} .card h3{ font-size:16px;} .card p{ font-size:14px; } }
+@media (max-width:350px){ .cards-wrap{ justify-content: space-around; } .card{ flex:0 0 100%; min-width:100%; } }
+</style>
+""", unsafe_allow_html=True)
 
 # -------------------------------
-# PC: Streamlit cards
+# Find card by title
 # -------------------------------
-def display_card_menu_pc(options, session_key, num_cols=4, next_screen=None):
-    cols = st.columns(num_cols, gap='small')
-    card_height = "200px"
-    font_size_title = "36px"
-    font_size_text = "20px"
+def find_card(title):
+    for c in cards:
+        if c["title"].lower() == title:
+            return c
+        if "submenu" in c and title in [s.lower() for s in c["submenu"]]:
+            return {"title": title, "body": f"{title.title()} report.", "submenu": []}
+    return None
 
-    for idx, option in enumerate(options):
-        color = CARD_COLORS[idx % len(CARD_COLORS)]
-        with cols[idx % num_cols]:
+# -------------------------------
+# PC rendering (streamlit-card)
+# -------------------------------
+def display_cards_pc(cards_list):
+    cols = st.columns(4)
+    for idx, c in enumerate(cards_list):
+        with cols[idx % 4]:
             clicked = card(
-                title=option.get("title", ""),
-                text=option.get("text", ""),
-                key=f"{session_key}-{idx}",
-                styles={
-                    "card": {
-                        "width": "100%", "height": card_height,
-                        "border-radius": "8px",
-                        "background": color,
-                        "color": "white",
-                        "box-shadow": "0 4px 12px rgba(0,0,0,0.25)",
-                        "border": "2px solid #600000",
-                        "text-align": "center",
-                        "margin": "0px",
-                    },
-                    "text": {"font-family": "serif", "font-size": font_size_text},
-                    "title": {"font-family": "serif", "font-size": font_size_title},
-                }
+                title=c["title"],
+                text=c.get("body", ""),
+                key=f"pc-card-{c['title']}"
             )
             if clicked:
-                st.session_state[session_key] = option.get("text")
-                if next_screen:
-                    st.session_state.screen = next_screen
-                st.session_state["__nav_triggered"] = True
-                return True
-    return False
+                st.session_state.nav_stack.append(c["title"].lower())
+                st.rerun()
 
 # -------------------------------
-# Mobile: HTML cards inside container
+# Mobile rendering (HTML flex)
 # -------------------------------
-def display_card_menu_mobile(options, session_key):
-    cards_html = '<div class="cards-wrap">'
-    for idx, option in enumerate(options):
-        cards_html += f'''<div class="card" onclick="window.alert('Selected: {option.get("text","")}')">
-            <h3>{option.get("title","")}</h3>
-            <p>{option.get("text","")}</p>
-        </div>
+def display_cards_mobile(cards_list):
+    html = '<div class="cards-wrap">'
+    for c in cards_list:
+        html += f'''<a href="/?nav={c["title"].lower()}" target="_self" style="text-decoration:none; color:inherit;">
+            <div class="card">
+                <h3>{c["title"]}</h3>
+                <p>{c.get("body","")}</p>
+            </div>
+        </a>
         '''
-    cards_html += '</div>'
-    st.markdown(cards_html, unsafe_allow_html=True)
+    html += "</div>"
+    st.markdown(html, unsafe_allow_html=True)
 
 # -------------------------------
-# Example usage
+# Handle query param clicks (mobile)
 # -------------------------------
-options = [
-    {"title": "Students", "text": "students"},
-    {"title": "Teachers", "text": "teachers"},
-    {"title": "Parents", "text": "parents"},
-    {"title": "Admins", "text": "admins"},
-    {"title": "Counselors", "text": "counselors"},
-    {"title": "Staff", "text": "staff"},
-]
+query_params = st.query_params
+clicked = query_params.get("nav", None)
+if clicked:
+    st.session_state.nav_stack.append(clicked)
+    st.query_params.clear()
+    st.rerun()
 
-if use_native_columns:
-    st.subheader("PC: Streamlit native cards")
-    display_card_menu_pc(options, session_key="selected_role", num_cols=4)
+# -------------------------------
+# Render current level
+# -------------------------------
+current_level = st.session_state.nav_stack[-1] if st.session_state.nav_stack else None
+
+if not current_level:
+    st.title("Main Menu")
+    if is_pc:
+        display_cards_pc(cards)
+    else:
+        display_cards_mobile(cards)
 else:
-    st.subheader("Mobile: HTML flex cards")
-    display_card_menu_mobile(options, session_key="selected_role")
+    card_obj = find_card(current_level)
 
-st.write(f"Detected screen width: {width}px")
+    if card_obj.get("submenu"):
+        st.title(f"{card_obj['title']} Submenu")
+        submenu_cards = [{"title": s, "body": f"{s} report."} for s in card_obj["submenu"]]
+        if is_pc:
+            display_cards_pc(submenu_cards)
+        else:
+            display_cards_mobile(submenu_cards)
+    else:
+        st.title(f"{card_obj['title']} Page")
+        if card_obj["title"].lower() == "activity":
+            st.success("Here you could load cont.main() or another page.")
+        else:
+            st.write(f"This is the detailed view for **{card_obj['title']}**.")
 
+    # Back button
+    if st.button("⬅ Back"):
+        st.session_state.nav_stack.pop()
+        st.rerun()
+
+# Debug info
+st.caption(f"📏 Screen width: {width}px | Current level: {current_level}")
