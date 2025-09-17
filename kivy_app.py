@@ -79,12 +79,13 @@ def find_card(title):
 
 
 # ---------- Navigation ----------
-query_params = st.experimental_get_query_params()
-clicked = query_params.get("nav", [None])[0]
+query_params = st.query_params
+clicked = query_params.get("nav", None)
 
 if clicked:
     st.session_state.nav_stack.append(clicked)
-    st.experimental_set_query_params()
+    # clear query param
+    st.query_params.clear()
     st.rerun()
 
 
@@ -128,5 +129,3 @@ else:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()
         st.rerun()
-
-
