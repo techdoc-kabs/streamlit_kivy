@@ -52,8 +52,7 @@ def display_card_menu_html(options: list, session_key: str, next_screen=None):
 
     for idx, option in enumerate(options):
         color = CARD_COLORS[idx % len(CARD_COLORS)]
-        cards_html += f'''
-        <div style="
+        cards_html += f'''<div style="
             flex: 1 1 calc({100/columns}% - 10px);
             max-width: calc({100/columns}% - 10px);
             height: {card_height};
@@ -95,3 +94,4 @@ options = [
 display_card_menu_html(options, session_key="selected_role")
 
 st.write(f"Device width: {device_width}px, Detected: {device_type}")
+
