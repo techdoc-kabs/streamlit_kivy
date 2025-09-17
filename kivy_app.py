@@ -46,13 +46,14 @@ def display_card_menu(options: list, session_key: str, max_cols_desktop: int = 4
     """
     # Determine number of columns dynamically
     if is_mobile:
-        # calculate columns based on screen width, min 1 column, max 3
-        cols_count = max(1, min(3, device_width // 180))  # 180px per card minimum
+        # Force at least 2 columns even on narrow phones
+        cols_count = min(3, max(2, device_width // 150))  # 150px per card minimum
     else:
         cols_count = max_cols_desktop
 
     cols = st.columns(cols_count, gap="small")
 
+    # Card styling based on device
     card_height = "150px" if is_mobile else "200px"
     font_size_title = "24px" if is_mobile else "36px"
     font_size_text = "14px" if is_mobile else "20px"
