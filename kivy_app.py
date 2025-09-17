@@ -1,19 +1,16 @@
 import streamlit as st
 from streamlit_javascript import st_javascript
-from streamlit_card import card
 
 # -------------------------------
 # Device detection
 # -------------------------------
 def get_device_type(width):
-    """Detect device type based on screen width"""
     try:
         w = int(width)
     except (ValueError, TypeError):
         return "desktop"
     return "mobile" if w < 704 else "desktop"
 
-# Get screen width from frontend
 device_width = st_javascript("window.innerWidth", key="screen_width") or 1024
 device_type = get_device_type(device_width)
 is_mobile = device_type == "mobile"
@@ -33,67 +30,58 @@ CARD_COLORS = [
 ]
 
 # -------------------------------
-# Responsive card menu function
+# Responsive card menu function using a flex container
 # -------------------------------
-def display_card_menu(options: list, session_key: str, max_cols_desktop: int = 4, next_screen=None):
+def display_card_menu_html(options: list, session_key: str, next_screen=None):
     """
-    Display a responsive card menu.
-
-    - options: list of dicts with keys 'title' and 'text'
-    - session_key: key to store clicked value in st.session_state
-    - max_cols_desktop: max columns on desktop
-    - next_screen: optional next screen to trigger
+    Display a responsive card menu using CSS flex/grid.
+    Ensures multi-column layout even on mobile.
     """
-    # Determine number of columns dynamically
-    if is_mobile:
-        # Force at least 2 columns even on narrow phones
-        cols_count = min(3, max(2, device_width // 150))  # 150px per card minimum
-    else:
-        cols_count = max_cols_desktop
-
-    cols = st.columns(cols_count, gap="small")
-
-    # Card styling based on device
     card_height = "150px" if is_mobile else "200px"
-    font_size_title = "24px" if is_mobile else "36px"
-    font_size_text = "14px" if is_mobile else "20px"
+    font_size_title = "20px" if is_mobile else "36px"
+    font_size_text = "12px" if is_mobile else "18px"
+
+    # Determine number of columns based on device
+    if is_mobile:
+        columns = 2  # always 2 columns on mobile
+    else:
+        columns = 4  # desktop
+
+    # Start the flex container
+    cards_html = f'<div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center;">'
 
     for idx, option in enumerate(options):
         color = CARD_COLORS[idx % len(CARD_COLORS)]
-        col_idx = idx % cols_count
-        with cols[col_idx]:
-            clicked = card(
-                title=option.get("title", ""),
-                text=option.get("text", ""),
-                key=f"{session_key}-{idx}",
-                styles={
-                    "card": {
-                        "width": "100%",
-                        "height": card_height,
-                        "border-radius": "8px",
-                        "background": color,
-                        "color": "white",
-                        "box-shadow": "0 4px 12px rgba(0,0,0,0.25)",
-                        "border": "2px solid #600000",
-                        "text-align": "center",
-                        "margin": "0px",
-                    },
-                    "text": {"font-family": "serif", "font-size": font_size_text},
-                    "title": {"font-family": "serif", "font-size": font_size_title},
-                }
-            )
-            if clicked:
-                st.session_state[session_key] = option.get("text")
-                if next_screen:
-                    st.session_state["screen"] = next_screen
-                st.session_state["__nav_triggered"] = True
-                return True
-    return False
+        cards_html += f'''
+        <div style="
+            flex: 1 1 calc({100/columns}% - 10px);
+            max-width: calc({100/columns}% - 10px);
+            height: {card_height};
+            border-radius: 12px;
+            background: {color};
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            cursor:pointer;
+            margin-bottom:10px;
+        " onclick="window.location.href='#'">
+            <h3 style='margin:5px; font-size:{font_size_title};'>{option.get("title","")}</h3>
+            <p style='margin:5px; font-size:{font_size_text};'>{option.get("text","")}</p>
+        </div>
+        '''
+
+    cards_html += '</div>'
+
+    st.markdown(cards_html, unsafe_allow_html=True)
 
 # -------------------------------
 # Example usage
 # -------------------------------
-st.title("Responsive Card Menu Demo")
+st.title("Responsive Card Menu (Flex Container)")
 
 options = [
     {"title": "Students", "text": "students"},
@@ -104,7 +92,6 @@ options = [
     {"title": "Staff", "text": "staff"},
 ]
 
-clicked = display_card_menu(options, session_key="selected_role", next_screen="dashboard")
+display_card_menu_html(options, session_key="selected_role")
 
-if "selected_role" in st.session_state:
-    st.success(f"Selected Role: {st.session_state['selected_role']}")
+st.write(f"Device width: {device_width}px, Detected: {device_type}")
