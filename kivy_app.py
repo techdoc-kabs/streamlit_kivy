@@ -1,4 +1,3 @@
-
 import streamlit as st
 from streamlit_card import card
 from streamlit_js_eval import streamlit_js_eval
@@ -75,11 +74,14 @@ def display_cards_pc(cards_list):
 
 # -------------------------------
 # Mobile rendering (HTML + JS)
-# -------------------------------
 def display_cards_mobile(cards_list):
     html = '<div class="cards-wrap">'
     for i, c in enumerate(cards_list):
-        html += f'''<div class="card" id="mobile-card-{i}">
+        html += f'''<div class="card" onclick="window.parent.postMessage({{
+            isStreamlitMessage: true,
+            type: 'streamlit:setComponentValue',
+            value: '{c["title"].lower()}'
+        }}, '*')">
             <h3>{c["title"]}</h3>
             <p>{c.get("body","")}</p>
         </div>
@@ -87,23 +89,11 @@ def display_cards_mobile(cards_list):
     html += "</div>"
     st.markdown(html, unsafe_allow_html=True)
 
-    # Attach JS click handlers
-    js = """
-    const cards = document.querySelectorAll('[id^="mobile-card-"]');
-    let clicked = null;
-    cards.forEach(c => {
-        c.onclick = () => {
-            clicked = c.querySelector("h3").innerText.toLowerCase();
-            window.parent.postMessage({isStreamlitMessage: true, type: "streamlit:setComponentValue", value: clicked}, "*");
-        };
-    });
-    clicked
-    """
-    result = streamlit_js_eval(js, key="MOBILE_CARD_CLICK")
+    # Here we just listen for the result (no big JS block)
+    result = streamlit_js_eval(js_expressions="", key="MOBILE_CARD_CLICK", label="mobile-card-click")
     if result:
         st.session_state.nav_stack.append(result)
         st.rerun()
-
 # -------------------------------
 # Render current level
 # -------------------------------
@@ -138,14 +128,4 @@ else:
         st.rerun()
 
 st.caption(f"📏 Screen width: {width}px | Current level: {current_level}")
-
-
-
-
-
-
-
-
-
-
 
