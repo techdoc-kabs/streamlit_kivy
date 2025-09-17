@@ -110,8 +110,7 @@ def display_card_menu_pc(options, session_key, num_cols=4, next_screen=None):
 def display_card_menu_mobile(options, session_key):
     cards_html = '<div class="cards-wrap">'
     for idx, option in enumerate(options):
-        cards_html += f'''
-        <div class="card" onclick="window.alert('Selected: {option.get("text","")}')">
+        cards_html += f'''<div class="card" onclick="window.alert('Selected: {option.get("text","")}')">
             <h3>{option.get("title","")}</h3>
             <p>{option.get("text","")}</p>
         </div>
@@ -139,3 +138,4 @@ else:
     display_card_menu_mobile(options, session_key="selected_role")
 
 st.write(f"Detected screen width: {width}px")
+
