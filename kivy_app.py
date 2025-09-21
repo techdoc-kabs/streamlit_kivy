@@ -1,284 +1,250 @@
-
 import streamlit as st
-from streamlit_card import card
-from streamlit_js_eval import streamlit_js_eval
+st.set_page_config(page_title="MindsReief-Hub", layout="wide")
+from db_connection import run_query
 import importlib
-import traceback
+import base64
+import auth
+import appointment_page
 
-if "nav_stack" not in st.session_state:
-    st.session_state.nav_stack = []
-try:
-    width = streamlit_js_eval(js_expressions="window.innerWidth", key="SCR_DETECT")
-except Exception:
-    width = None
+if "db_pool" not in st.session_state:
+    st.session_state.db_pool = None
 
+def set_custom_background(bg_color="skyblue", sidebar_img=None, sidebar_width="200px"):
+    page_bg_img = f"""
+        <style>
+        [data-testid="stAppViewContainer"] > .main {{
+            background-color: {bg_color if bg_color else "transparent"};
+            background-size: 140%;
+            background-position: top left;
+            background-repeat: repeat;
+            background-attachment: local;
+            padding-top: 0px;}}
+        /* Reduce sidebar width */
+        section[data-testid="stSidebar"] {{
+            width: {sidebar_width} !important;
+            min-width: {sidebar_width} !important;}}
 
-is_mobile = width is not None and width <  1200
+        [data-testid="stSidebar"] > div:first-child {{
+            {"background-image: url('data:image/png;base64," + sidebar_img + "');" if sidebar_img else ""}
+            background-position: center; 
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-size: cover;}}
 
-CARD_COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"]
+        [data-testid="stHeader"] {{
+            background: rgba(0,0,0,0);
+            padding-top: 0px;
+        }}
 
-
-@st.cache_data
-def get_cards_css():
-    return """
-    <style>
-    .cards-wrap {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        padding: 8px 0;
-        justify-content: flex-start;
-    }
-    .card {
-        background: #fff;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
-        padding: 16px;
-        min-width: 140px;
-        flex: 0 0 48%;
-        transition: transform 0.12s ease;
-        cursor: pointer;
-    }
-    .card:hover { transform: translateY(-4px); }
-    .card h3 { margin: 6px 0; font-size: 16px; }
-    .card p { margin: 4px 0; font-size: 14px; color: #333; }
-
-    @media (min-width: 992px) { .card { flex: 0 0 23%; } } /* 4 cols desktop */
-    </style>
+        [data-testid="stToolbar"] {{
+            right: 2rem;
+        }}
+        </style>
     """
-st.markdown(get_cards_css(), unsafe_allow_html=True)
+    st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# ---------- Sanitize cards ----------
-def sanitize_cards(cards_list):
-    sanitized = []
-    for c in cards_list:
-        new_c = {
-            "title": str(c.get("title","")),
-            "text": str(c.get("text","")),
-            "submenu": sanitize_cards(c.get("submenu",[])) if "submenu" in c else []}
-        sanitized.append(new_c)
-    return sanitized
-
-# ---------- Find card helper ----------
-def find_card(cards_list, title):
-    title = title.lower()
-    for c in cards_list:
-        # Check main card
-        if c["text"].lower() == title:
-            return c
-        # Check submenu cards
-        if "submenu" in c:
-            for sub in c["submenu"]:
-                if sub["text"].lower() == title:
-                    return sub
-    return None
-
-# ---------- Mobile cards ----------
 @st.cache_data
-def build_mobile_cards_html(cards_list):
-    cards_list = sanitize_cards(cards_list)
-    html = '<div class="cards-wrap">'
-    for c in cards_list:
-        html += f'''<a href="/?nav={c["title"].lower()}" target="_self" style="text-decoration:none; color:inherit;">
-            <div class="card">
-                <h3>{c["title"]}</h3>
-                <p>{c.get("text","")}</p>
-            </div>
-        </a>
-        '''
-    html += "</div>"
-    return html
+def get_img_as_base64(file):
+    with open(file, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
 
-def render_mobile_cards(cards_list):
-    html = build_mobile_cards_html(cards_list)
-    st.markdown(html, unsafe_allow_html=True)
 
-# ---------- PC card renderer ----------
-def render_pc_cards(cards_list, session_key):
-    num_cols = 3
-    cols = st.columns(num_cols, gap='small')
-    card_height = "180px"
-    font_size_title = "60px"
-    font_size_text = "20px"
+def load_role_module():
+        username = st.session_state.user_info.get("username")
+        user = run_query(
+            "SELECT role, is_active FROM users WHERE username=%s",
+            (username,),
+            fetch="one")
+        if not user:
+            st.error(f"User '{username}' not found in database.")
+            return
 
-    for idx, c in enumerate(cards_list):
-        color = CARD_COLORS[idx % len(CARD_COLORS)]
-        with cols[idx % num_cols]:
-            clicked = card(
-                title=c.get("title", ""),
-                text=c.get("text", ""),
-                key=f"{session_key}-{c.get('title','')}",
-                styles={
-                    "card": {
-                        "width": "100%",
-                        "height": card_height,
-                        "border-radius": "0px",
-                        "background": color,
-                        "color": "white",
-                        "box-shadow": "0 4px 12px rgba(0,0,0,0.25)",
-                        "border": "2px solid #600000",
-                        "text-align": "center",
-                        "margin": "0px",
-                    },
-                    "title": {"font-family": "serif", "font-size": font_size_title},
-                    "text": {"font-family": "serif", "font-size": font_size_text},
-                }
-            )
-            if clicked:
-                st.session_state.nav_stack.append(c["text"].lower())
-                st.rerun()
-
-@st.cache_resource
-def import_module_cached(module_name):
-    try:
-        return importlib.import_module(module_name)
-    except ModuleNotFoundError:
-        return None
-
-# ---------- Load module ----------
-def load_module(modules, page_text, sub_text=None):
-    page_modules = modules.get(page_text, {})
-    target_key = sub_text if sub_text else page_text
-    module_info = page_modules.get(target_key)
-
-    if not module_info:
-        st.info(f"Coming Soon: {target_key}")
-        return
-
-    module_name = module_info.get("module")
-    if not module_name:
-        st.info(f"Module not available yet for {target_key}")
-        return
-
-    module = import_module_cached(module_name)
-    if not module:
-        st.error(f"Module '{module_name}' not found. Create '{module_name}.py'.")
-        return
-
-    if hasattr(module, "main") and callable(module.main):
+        if user["is_active"] == 0:
+            st.warning("🚫 Your account has been deactivated. Please contact admin.")
+            for key in ["logged_in", "user_info", "show_login", "admin_redirect"]:
+                st.session_state[key] = False if isinstance(st.session_state.get(key), bool) else ""
+            return
+        st.session_state["user_role"] = user["role"]
+        role_modules = {
+            "Admin": "admin",
+            "Admin2": "super_admin",
+            "Therapist": "therapist",
+            "Teacher": "teachers_page",
+            "Parent": "parents_page",
+            "Student": "student_page"}
+        module_name = role_modules.get(user["role"])
+        if not module_name:
+            st.warning(f"No module defined for role: {user['role']}")
+            return
         try:
-            module.main()
-        except Exception as e:
-            st.error(f"Error running module '{module_name}': {e}")
+            module = importlib.import_module(module_name)
+        except ModuleNotFoundError as mnf:
+            st.error(f"Module '{module_name}' not found. Make sure '{module_name}.py' exists.\n{mnf}")
             st.text(traceback.format_exc())
-    else:
-        st.error(f"Module '{module_name}' does not have a callable main() function.")
-
-
-
-
-def render_card_navigation(cards_list, modules):
-    if st.session_state.nav_stack:
-        if st.button("⬅ Back"):
-            st.session_state.nav_stack.pop()
-            st.rerun()
-    current = st.session_state.nav_stack[-1] if st.session_state.nav_stack else None
-    query = st.query_params.get("nav", None)
-    if query:
-        st.session_state.nav_stack.append(query[0])
-        st.rerun()
-    if not current:
-        if is_mobile:
-            render_mobile_cards(cards_list)
+            return
+        except Exception as e:
+            st.error(f"Unexpected error while importing module '{module_name}': {e}")
+            st.text(traceback.format_exc())
+            return
+        if hasattr(module, "main") and callable(module.main):
+            try:
+                module.main()
+            except Exception as e:
+                st.error(f"Error running main() of '{module_name}': {e}")
+                st.text(traceback.format_exc())
         else:
-            render_pc_cards(cards_list, "main")
-        return
-    card_obj = find_card(cards_list, current)
-    if not card_obj:
-        st.error("Card not found!")
-        return
-    if "submenu" in card_obj and card_obj["submenu"]:
-        if is_mobile:
-            render_mobile_cards(card_obj["submenu"])
-        else:
-            render_pc_cards(card_obj["submenu"], f"submenu-{card_obj['text']}")
-        return
-    parent_page = None
-    for c in cards_list:
-        if "submenu" in c and card_obj in c["submenu"]:
-            parent_page = c["text"]
-            break
-    parent_page = parent_page or card_obj["text"]
-
-    if modules.get(parent_page) and modules[parent_page].get(card_obj["text"]):
-        module_name = modules[parent_page][card_obj["text"]].get("module")
-        if module_name:
-            load_module(modules, parent_page, card_obj["text"])
-        else:
-            st.info(f"Coming soon: {card_obj['text']}")
-    else:
-        st.info(f"Coming soon: {card_obj['text']}")
+            st.error(f"Module '{module_name}' does not have a callable main() function.")
 
 
-MODULES = {
-    "Schedules": {
-        "Enroll Clients": {"module": "appointments"},
-        "Assign Tools": {"module": "assingn_tools"},
-        "Status": {"module": "track_screen_status"},
-    },
-    "Reports": {
-        "Activities": {"module": "activity_summary"},
-        "Conditions": {"module": "screen_results_mult"},
-        "Impact": {"module": "impact"},
-    },
-    "Analysis": {
-        "Results": {"module": "screen_results_mult"},
-        "Graphs": {"module": "graphs"},
-    },
-    "Messages": {
-        "Need help": {"module": "need_help"},
-        "Feedback": {"module": "feedback"},
-        "Bookings": {"module": "bookings"},
-    },
-    "Resources": {
-        "Videos": {"module": "video_handles"},
-        "Podcasts": {"module": None},
-        "Publish": {"module": None},
-    },
-    "Files": {
-        "Files": {"module": "entire_file"}
-    }
-}
 
 
-# ---------- MENU DEFINITION ----------
-CARDS = [
-    {"title": "🗓️", "text": "Schedules", "submenu": [
-        {"title": "📝", "text": "Enroll Clients"},
-        {"title": "💢", "text": "Assign Tools"},
-        {"title": "⏳", "text": "Status"}
-    ]},
-    {"title": "📚", "text": "Reports", "submenu": [
-        {"title": "💹", "text": "Activities"},
-        {"title": "🧠", "text": "Conditions"},
-        {"title": "🌍", "text": "Impact"}
-    ]},
-    {"title": "📈", "text": "Analysis", "submenu": [
-        {"title": "📦", "text": "Results"},
-        {"title": "📊", "text": "Graphs"}
-    ]},
-    {"title": "📧", "text": "Messages", "submenu": [
-        {"title": "🙋‍♀️", "text": "Need Help"},
-        {"title": "💬", "text": "Feedback"},
-        {"title": "📅", "text": "Bookings"}
-    ]},
-    {"title": "🗃️", "text": "Files", "submenu": []},  # no submenu, direct
-    {"title": "🗄️", "text": "Resources", "submenu": [
-        {"title": "🎥", "text": "Videos"},
-        {"title": "🎙️", "text": "Podcasts"},
-        {"title": "📖", "text": "Publish"}
-    ]}
-]
+def get_first_name_from_username(username):
+    query = "SELECT first_name FROM users WHERE username = %s"
+    result = run_query(query, (username,), fetch="one")
+    if result and result.get("first_name"):
+        return result["first_name"]
+    return username
 
+img = get_img_as_base64("images/IMG.webp")
+
+defaults = {
+    "page": "login",
+    "show_login": False,
+    "show_signup": False,
+    "logged_in": False,
+    "user_name": "",
+    "user_role": "",
+    "admin_redirect": False,
+    "notified": False}
+
+for key, val in defaults.items():
+    if key not in st.session_state:
+        st.session_state[key] = val
+
+def parse_timestamp(ts):
+    if isinstance(ts, str):
+        return datetime.strptime(ts, "%Y-%m-%d %H:%M:%S")
+    return ts
+
+def format_duration(seconds):
+    h = seconds // 3600
+    m = (seconds % 3600) // 60
+    s = seconds % 60
+    return f"{h:02d}:{m:02d}:{s:02d}"
+
+
+def logout():
+    username = st.session_state.get("user_name")
+    if username:
+        # Fetch user info
+        query = "SELECT user_id, role, full_name FROM users WHERE username = %s"
+        user = run_query(query, (username,), fetch="one")
+        if user:
+            user_id = user["user_id"]
+            role = user["role"]
+            name = user["full_name"]
+            ts_query = """
+                SELECT timestamp FROM sessions
+                WHERE user_id = %s AND event_type = 'login'
+                ORDER BY timestamp DESC LIMIT 1
+            """
+            login_row = run_query(ts_query, (user_id,), fetch="one")
+            if login_row:
+                login_time = parse_timestamp(login_row["timestamp"])
+                logout_time = datetime.now()
+                duration_sec = int((logout_time - login_time).total_seconds())
+                readable_duration = format_duration(duration_sec)
+                insert_session_event(user_id, role, name, "logout", readable_duration)
+    for key in ["logged_in", "user_name", "user_role", "show_login", "admin_redirect", "notified", "user_info"]:
+        if key in st.session_state:
+            del st.session_state[key]
+    st.query_params["page"] = "home"
+    st.success("👋 Logged out successfully.")
+    st.rerun()
+
+
+# ------------------- SESSION EVENT -------------------
+def insert_session_event(user_id, role, name, event_type, session_duration=None):
+    query = """
+        INSERT INTO sessions (user_id, role, name, event_type, timestamp, session_duration)
+        VALUES (%s, %s, %s, %s, CURRENT_TIMESTAMP, %s)
+    """
+    run_action(query, (user_id, role, name, event_type, session_duration))
+# ------------------- FEEDBACK -------------------
+def save_feedback(message, name="Anonymous"):
+    query = "INSERT INTO feedbacks (name, message) VALUES (%s, %s)"
+    run_action(query, (name, message))
+# ------------------- APPOINTMENTS -------------------
+def save_appointment(name, email, date, appointment_time, reason, tel=""):
+    query = """
+        INSERT INTO online_appointments (name, email, tel, date, time, reason)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    run_action(query, (name, email, tel, str(date), str(appointment_time), reason))
+
+
+###### DRIVER CODE ################
 def main():
-    defaults = {
-        "user_info": {}}
-    for key, value in defaults.items():
-        if key not in st.session_state:
-            st.session_state[key] = value
-    # set_full_page_background('images/psy4.jpg')
-    # ------------------ USER ------------------
-    username = st.session_state.get("user_info", {}).get("username", "guest")
-    render_card_navigation(CARDS, MODULES)
+    query_params = st.query_params
+    page = query_params.get("page", "home")
+    import menu_page
+    menu_page.main()
+    if st.session_state.get("logged_in") and st.session_state.get("user_info"):
+        set_custom_background(bg_color=None, sidebar_img=img, sidebar_width="280px")
+        username = st.session_state.user_info["username"]
+        first_name = get_first_name_from_username(username)
+        st.sidebar.success(f"👋 Welcome, {first_name}")
+        user = run_query("SELECT is_active, role FROM users WHERE username=%s", (username,), fetch="one")
+        if user and user["is_active"] == 0:
+            st.warning("🚫 Your account has been deactivated. Please contact admin.")
+            for key in ["logged_in", "user_info", "show_login", "admin_redirect"]:
+                st.session_state[key] = False if isinstance(st.session_state.get(key), bool) else ""
+            return
+
+    if "page_override" in st.session_state:
+        page = st.session_state.pop("page_override")
+    else:
+        page = st.query_params.get("page", "home")
+
+    import menu_page
+    menu_page.main()
+
+    if page == "home":
+        import home_page
+        home_page.main()
+        home_page.static_book_button()  # Floating button
+
+    elif page == "appointment":
+        import appointment_page
+        appointment_page.appointment_page()
+
+    # --- SIGNIN ---
+    elif page == "signin":
+        with st.spinner("Loading ..."):
+            if st.session_state.get("logged_in"):
+                load_role_module()
+                with st.sidebar:
+                    if st.button("🚪 Logout"):
+                        logout()
+            else:
+                if st.session_state.get("show_login"):
+                    auth.show_login_dialog()
+                elif st.session_state.get("show_signup"):
+                    auth.show_signup_dialog()
+                else:
+                    st.session_state.show_login = True
+                    st.rerun()
+        
+        if st.button("⬅ Back to Home"):
+            st.query_params["page"] = "home"
+    # --- HELP ---
+    elif page == "help":
+        st.write("### ❓ Help Page")
+        st.write("This is where help content will appear.")
+        if st.button("⬅ Back to Home"):
+            st.query_params["page"] = "home"
 if __name__ == "__main__":
     main()
+
+
