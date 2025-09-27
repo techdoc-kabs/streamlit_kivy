@@ -65,7 +65,7 @@ if len(st.session_state.nav_stack) > 1:
     if st.button("⬅ Back"):
         st.session_state.nav_stack.pop()
         current_page = st.session_state.nav_stack[-1]
-        st.experimental_rerun()
+        st.rerun()
 
 st.write(f"### {current_page}")
 
@@ -80,4 +80,5 @@ for i, item in enumerate(buttons):
     if col.button(f"{icon}  {label}", key=f"{current_page}-{label}-{i}"):
         # Append the clicked card to nav_stack
         st.session_state.nav_stack.append(label)
-        st.experimental_rerun()
+        st.rerun()
+
