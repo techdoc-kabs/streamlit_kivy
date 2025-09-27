@@ -7,50 +7,51 @@ MENUS = {
     "Schedules": ["Upcoming", "Past"]
 }
 
-# Get current page from session state
-if "page" not in st.session_state:
-    st.session_state.page = "main"
+# --- Navigation via query params ---
+query = st.query_params.get("page", ["main"])[0]
 
-# Handle navigation
-if "goto" in st.session_state:
-    st.session_state.page = st.session_state.goto
-    del st.session_state["goto"]
-    st.experimental_rerun()
+if "back" in st.query_params:
+    for parent, submenu in MENUS.items():
+        if query in submenu:
+            st.query_params["page"] = parent
+            st.rerun()
+    st.query_params["page"] = "main"
+    st.rerun()
 
-current_page = st.session_state.page
+current_page = query
 
-# Back button
+# --- Back Button ---
 if current_page != "main":
-    if st.button("⬅ Back", use_container_width=True):
-        for parent, submenu in MENUS.items():
-            if current_page in submenu:
-                st.session_state.page = parent
-                st.experimental_rerun()
-        st.session_state.page = "main"
-        st.experimental_rerun()
+    st.markdown(
+        f"""
+        <button onclick="window.location.href='/?back=1'" 
+        style="padding:10px 15px; border:none; background:#555; color:white; border-radius:6px;">
+            ⬅ Back
+        </button>
+        """,
+        unsafe_allow_html=True
+    )
 
 st.write(f"### {current_page}")
 
-# ✅ Force 2 columns using HTML <table>
+# --- Two-column card layout ---
 html = "<table style='width:100%; text-align:center;'>"
 buttons = MENUS[current_page]
 for i in range(0, len(buttons), 2):
     html += "<tr>"
     for item in buttons[i:i+2]:
         html += f"""<td style='padding:8px;'>
-            <form action="" method="post">
-                <button name="goto" type="submit" value="{item}"
-                    style="
-                        background:#3498db; 
-                        color:white;
-                        padding:14px;
-                        border:none;
-                        border-radius:8px;
-                        width:100%;
-                        font-size:16px;
-                        cursor:pointer;
-                    ">{item}</button>
-            </form>
+            <button onclick="window.location.href='/?page={item}'"
+                style="
+                    background:#3498db; 
+                    color:white;
+                    padding:14px;
+                    border:none;
+                    border-radius:8px;
+                    width:100%;
+                    font-size:16px;
+                    cursor:pointer;
+                ">{item}</button>
         </td>
         """
     html += "</tr>"
