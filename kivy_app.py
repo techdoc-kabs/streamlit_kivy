@@ -45,35 +45,27 @@ CARD_CSS = """
 st.markdown(CARD_CSS, unsafe_allow_html=True)
 
 # -------------------- Navigation --------------------
-if "current_page" not in st.session_state:
-    st.session_state.current_page = st.query_params.get("page", ["main"])[0]
+if "nav_stack" not in st.session_state:
+    st.session_state.nav_stack = ["main"]
 
-current_page = st.session_state.current_page
+current_page = st.session_state.nav_stack[-1]
 
 # Back button
-if current_page != "main":
+if len(st.session_state.nav_stack) > 1:
     if st.button("⬅ Back"):
-        # Find parent
-        parent = "main"
-        for k, v in MENUS.items():
-            if any(item['label'] == current_page for item in v):
-                parent = k
-        st.session_state.current_page = parent
-        st.experimental_set_query_params(page=parent)
-        st.rerun()
+        st.session_state.nav_stack.pop()
+        current_page = st.session_state.nav_stack[-1]
 
 st.write(f"### {current_page}")
 
 # -------------------- Display cards --------------------
 buttons = MENUS.get(current_page, [])
+cols = st.columns(2)  # two columns even on mobile
 
-cols = st.columns(2)
 for i, item in enumerate(buttons):
     col = cols[i % 2]
     label = item["label"]
     icon = item.get("icon", "")
-    # Each button is styled as HTML inside the column
     if col.button(f"{icon}  {label}", key=f"{current_page}-{label}"):
-        st.session_state.current_page = label
-        st.experimental_set_query_params(page=label)
-        st.rerun()
+        st.session_state.nav_stack.append(label)
+        current_page = label
