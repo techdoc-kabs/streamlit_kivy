@@ -47,7 +47,7 @@ CARD_CSS = """
     font-size: 32px;
     margin-bottom: 8px;
 }
-@media (max-width: 600px){
+@media (max-width: 200px){
     .card { flex: 1 1 48%; max-width: 48%; }  /* still 2 columns on small screens */
 }
 </style>
@@ -81,4 +81,5 @@ for i, item in enumerate(buttons):
         # Append the clicked card to nav_stack
         st.session_state.nav_stack.append(label)
         st.rerun()
+
 
