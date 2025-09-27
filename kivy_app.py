@@ -1,60 +1,40 @@
 import streamlit as st
 
-# Define menus
+# -------------------- MENUS --------------------
 MENUS = {
     "main": ["Consultations", "Reports", "Files", "Schedules"],
     "Consultations": ["New Session", "History"],
     "Schedules": ["Upcoming", "Past"]
 }
 
-# --- Navigation via query params ---
-query = st.query_params.get("page", ["main"])[0]
+# -------------------- Navigation --------------------
+# Get current page from query params
+current_page = st.session_state.get("current_page")
+if not current_page:
+    current_page = st.query_params.get("page", ["main"])[0]
+    st.session_state.current_page = current_page
 
-if "back" in st.query_params:
-    for parent, submenu in MENUS.items():
-        if query in submenu:
-            st.query_params["page"] = parent
-            st.rerun()
-    st.query_params["page"] = "main"
-    st.rerun()
-
-current_page = query
-
-# --- Back Button ---
+# Back button
 if current_page != "main":
-    st.markdown(
-        f"""
-        <button onclick="window.location.href='/?back=1'" 
-        style="padding:10px 15px; border:none; background:#555; color:white; border-radius:6px;">
-            ⬅ Back
-        </button>
-        """,
-        unsafe_allow_html=True
-    )
+    if st.button("⬅ Back"):
+        # Find parent page
+        parent = "main"
+        for k, v in MENUS.items():
+            if current_page in v:
+                parent = k
+        st.session_state.current_page = parent
+        st.experimental_set_query_params(page=parent)
+        st.rerun()
 
 st.write(f"### {current_page}")
 
-# --- Two-column card layout ---
-html = "<table style='width:100%; text-align:center;'>"
-buttons = MENUS[current_page]
-for i in range(0, len(buttons), 2):
-    html += "<tr>"
-    for item in buttons[i:i+2]:
-        html += f"""<td style='padding:8px;'>
-            <button onclick="window.location.href='/?page={item}'"
-                style="
-                    background:#3498db; 
-                    color:white;
-                    padding:14px;
-                    border:none;
-                    border-radius:8px;
-                    width:100%;
-                    font-size:16px;
-                    cursor:pointer;
-                ">{item}</button>
-        </td>
-        """
-    html += "</tr>"
-html += "</table>"
+# -------------------- Two-column layout --------------------
+buttons = MENUS.get(current_page, [])
+cols = st.columns(2)
 
-st.markdown(html, unsafe_allow_html=True)
+for i, item in enumerate(buttons):
+    col = cols[i % 2]
+    if col.button(item, key=f"{current_page}-{item}"):
+        st.session_state.current_page = item
+        st.experimental_set_query_params(page=item)
+        st.rerun()
